@@ -36,6 +36,12 @@ jobs:
           echo "service failed to start" >&2
           docker logs chario_app
           exit 1
+      - name: Smoke /health & /metrics
+        run: |
+          set -e
+          curl --fail http://localhost:3000/health | jq '.db=="ok" and .stripe=="ok"'
+          curl --fail -u "metrics:${{ secrets.METRICS_PASS }}" \
+               http://localhost:3000/metrics | grep http_request_duration_seconds
       - name: Issue token
         id: token
         run: |
