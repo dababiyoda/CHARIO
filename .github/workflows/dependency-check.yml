@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Run OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@v3.0.2
+        uses: dependency-check/Dependency-Check_Action@v3.0.3
         with:
           project: 'CHARIO'
           path: '.'
