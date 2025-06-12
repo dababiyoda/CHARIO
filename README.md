@@ -16,12 +16,13 @@ graph TD
   API-->Twilio[Twilio]
 ```
 
-## Quick start
-
-Run the entire stack with Docker Compose:
+## Getting Started
 
 ```bash
-docker compose up
+git clone https://github.com/yourname/CHARIO && cd CHARIO
+cp .env.example .env              # fill secrets
+npm ci && npx prisma migrate dev  # creates DB
+npm run dev                       # http://localhost:3000
 ```
 
 ## API reference
