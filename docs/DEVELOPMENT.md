@@ -31,6 +31,10 @@ This document provides an overview of the repository layout and tips for local d
    npm run lint
    npm test
    ```
+   To run Jest directly without npm prompting for confirmation, use:
+   ```bash
+   npx --yes jest --runInBand --no-colors
+   ```
 
 ### Seeding the database
 
