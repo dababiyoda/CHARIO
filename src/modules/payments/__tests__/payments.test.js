@@ -10,7 +10,7 @@ process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 
 const { PrismaClient, __rides } = require('@prisma/client');
-const { chargeCard } = require('../index');
+const { chargeCard } = require('../service');
 
 describe('chargeCard', () => {
   beforeEach(() => {

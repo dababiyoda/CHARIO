@@ -9,7 +9,7 @@ process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
-const { app, io } = require('../../app');
+const { app, io } = require('../../../app');
 const { __rides } = require('@prisma/client');
 
 describe('stripe webhook', () => {

@@ -8,8 +8,8 @@ process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 
-const { app } = require('../../app');
-const { issueToken } = require('../../auth');
+const { app } = require('../../../app');
+const { issueToken } = require('../../auth/service');
 const { __rides } = require('@prisma/client');
 
 const driverId = 'driver123';

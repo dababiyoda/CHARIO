@@ -10,7 +10,7 @@ process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
-const createWebhookRouter = require('../webhook');
+const createWebhookRouter = require('../routes');
 const { __rides } = require('@prisma/client');
 
 describe('stripe webhook router', () => {

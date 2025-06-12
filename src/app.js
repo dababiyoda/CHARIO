@@ -1,20 +1,20 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { prisma } = require('./db');
+const { prisma } = require('./utils/db');
 const pinoHttp = require('pino-http');
 const { randomUUID, createHash } = require('crypto');
-const { observeRequest, metricsEndpoint } = require('./metrics');
-const { config } = require('../../src/config/env');
-const { payoutDriver } = require('./payments/payouts');
-const createWebhookRouter = require('./payments/webhook');
-const { authenticate } = require('./auth');
-const { sendSMS } = require('./rides/sms');
+const { observeRequest, metricsEndpoint } = require('./utils/metrics');
+const { config } = require('./config/env');
+const { payoutDriver } = require('./modules/payments/payouts');
+const createWebhookRouter = require('./modules/payments/routes');
+const { authenticate, issueToken } = require('./modules/auth/service');
+const { sendSMS } = require('./modules/rides/service');
 const cron = require('node-cron');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { logAudit } = require('./audit');
-const audit = require('./middleware/audit');
+const { logAudit } = require('./utils/audit');
+const audit = require('./utils/middleware/audit');
 const {
   validate,
   bookRideSchema,
@@ -22,8 +22,7 @@ const {
   signupSchema,
   ridesQuerySchema,
   idSchema
-} = require('./middleware/validate');
-const { issueToken } = require('./auth');
+} = require('./utils/middleware/validate');
 
 const app = express();
 const logger = pinoHttp({

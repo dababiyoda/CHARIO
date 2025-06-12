@@ -46,7 +46,7 @@ function with a file buffer, file name and the associated ride id:
 
 ```javascript
 const fs = require('fs');
-const uploadInsurance = require('./server/src/insurance');
+const uploadInsurance = require('./src/modules/insurance/service');
 
 const pdfBuffer = fs.readFileSync('insurance.pdf');
 uploadInsurance(pdfBuffer, 'insurance.pdf', rideId)

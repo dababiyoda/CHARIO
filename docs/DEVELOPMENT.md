@@ -5,11 +5,11 @@ This document provides an overview of the repository layout and tips for local d
 ## Repository layout
 
 - `index.js` – Bootstrap file that loads environment variables and starts the server.
-- `server/src/` – Back-end source organized by feature:
-  - `auth/` – Helpers for issuing and verifying JWTs.
-  - `payments/` – Stripe integration and driver payouts.
-  - `insurance/` – Uploads insurance documents to S3 compatible storage.
-  - `rides/` – Express routes and SMS helpers for ride scheduling.
+- `src/` – Back-end source organized by feature:
+  - `modules/auth/` – Helpers for issuing and verifying JWTs.
+  - `modules/payments/` – Stripe integration and driver payouts.
+  - `modules/insurance/` – Uploads insurance documents to S3 compatible storage.
+  - `modules/rides/` – Express routes and SMS helpers for ride scheduling.
 - `frontend/` – React components used by the demo front‑end.
 - `public/` – Static HTML served by the API server.
 - `__tests__/` – Reserved for integration tests.

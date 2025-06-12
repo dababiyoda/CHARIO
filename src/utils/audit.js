@@ -1,4 +1,4 @@
-const { prisma } = require('../db');
+const { prisma } = require('./db');
 
 /**
  * Record an audit event for PHI access.

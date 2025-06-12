@@ -1,6 +1,6 @@
-const { config } = require('../../../src/config/env');
+const { config } = require('../../config/env');
 const stripe = require('stripe')(config.STRIPE_KEY);
-const { prisma } = require('../db');
+const { prisma } = require('../../utils/db');
 
 /**
  * Charge a customer's default card for a ride.
