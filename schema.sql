@@ -49,6 +49,7 @@ CREATE TABLE rides (
     insurance_id UUID NULL,
     -- use TEXT for Stripe PaymentIntent ids like "pi_..."
     stripe_payment_id TEXT,
+    completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

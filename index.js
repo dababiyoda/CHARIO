@@ -1,5 +1,6 @@
 const express = require('express');
 const { Pool } = require('pg');
+const { payoutDriver } = require('./payouts');
 
 const app = express();
 app.use(express.json());
@@ -76,6 +77,47 @@ app.put('/rides/:id/assign', requireDriver, async (req, res) => {
     return res.json(updated[0]);
   } catch (err) {
     console.error('Failed to assign ride', err);
+    return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// PUT /rides/:id/complete handler
+app.put('/rides/:id/complete', requireDriver, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { rows } = await pool.query(
+      'SELECT driver_id, status FROM rides WHERE id = $1',
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'ride not found' });
+    }
+
+    const ride = rows[0];
+
+    if (ride.driver_id !== req.user.id) {
+      return res.status(403).json({ error: 'only assigned driver can complete ride' });
+    }
+
+    if (ride.status === 'completed') {
+      return res.status(409).json({ error: 'ride already completed' });
+    }
+
+    const updateQuery = `
+      UPDATE rides
+      SET status = 'completed', completed_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
+
+    const { rows: updated } = await pool.query(updateQuery, [id]);
+
+    payoutDriver(req.user.id, id);
+
+    return res.json(updated[0]);
+  } catch (err) {
+    console.error('Failed to complete ride', err);
     return res.status(500).json({ error: 'internal server error' });
   }
 });
