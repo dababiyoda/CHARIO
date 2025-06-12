@@ -64,6 +64,7 @@ class PrismaClient {
         auditLogs.push({ id: String(auditLogs.length + 1), ...data });
       }
     };
+    this.$queryRaw = async () => [{ '?column?': 1 }];
   }
 }
 

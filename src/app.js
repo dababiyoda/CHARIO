@@ -7,6 +7,7 @@ const { getLogger } = require('./utils/logger');
 const { randomUUID, createHash } = require('crypto');
 const { observeRequest, metricsEndpoint } = require('./utils/metrics');
 const { config } = require('./config/env');
+const stripe = require('stripe')(config.STRIPE_KEY);
 const { payoutDriver } = require('./modules/payments/payouts');
 const createWebhookRouter = require('./modules/payments/routes');
 const { authenticate, issueToken } = require('./modules/auth/service');
@@ -54,6 +55,11 @@ app.use(express.static('public'));
 
 // Simple health endpoint for containers
 app.get('/healthz', (req, res) => res.send('ok'));
+app.get('/health', async (req, res) => {
+  await prisma.$queryRaw`SELECT 1`;
+  await stripe.balance.retrieve().catch(() => null);
+  res.json({ db: 'ok', stripe: 'ok', version: process.pkg.version });
+});
 app.get('/metrics', metricsEndpoint);
 
 
