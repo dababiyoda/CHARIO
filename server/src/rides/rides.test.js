@@ -1,7 +1,7 @@
 jest.mock('pg');
 
 const request = require('supertest');
-const { app, pool } = require('../index');
+const { app, pool } = require('../app');
 const { __rides } = require('pg');
 
 describe('/rides booking endpoint', () => {
