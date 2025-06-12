@@ -88,6 +88,11 @@ For coverage reporting (fails under 80%), run:
 ```bash
 npm run test:ci
 ```
+If you prefer to invoke Jest directly, pass the `--yes` flag to `npx` to skip the
+installation prompt:
+```bash
+npx --yes jest --runInBand --no-colors
+```
 
 
 ## Docker image
