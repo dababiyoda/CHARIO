@@ -1,0 +1,21 @@
+jest.mock('stripe', () => jest.fn(() => ({
+  paymentIntents: { create: jest.fn().mockResolvedValue({ id: 'pi_1' }) }
+})));
+
+const { Pool, __rides } = require('pg');
+const { chargeCard } = require('../index');
+
+describe('chargeCard', () => {
+  beforeEach(() => {
+    __rides.length = 0;
+    __rides.push({ id: 1 });
+  });
+
+  test('creates PaymentIntent and updates ride', async () => {
+    const pool = new Pool();
+    await chargeCard({ rideId: 1, amount: 10, customerId: 'cus_1' });
+    const ride = __rides.find(r => r.id === 1);
+    expect(ride.stripe_payment_id).toBe('pi_1');
+    expect(ride.status).toBe('confirmed');
+  });
+});
