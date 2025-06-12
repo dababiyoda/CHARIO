@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand",
     "start": "node index.js",
     "lint": "eslint . --ignore-pattern \"coverage/**\"",
     "prepare": "husky install",
@@ -57,7 +58,14 @@
     "make-coverage-badge": "^1.2.0",
     "prisma": "^6.9.0",
     "supertest": "^6.3.3",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.10",
+    "cross-env": "^7.0.3"
+  },
+  "jest": {
+    "setupFiles": ["<rootDir>/tests/jest.setup.js"],
+    "coverageThreshold": {
+      "global": { "lines": 80 }
+    }
   },
   "lint-staged": {
     "*.{js,jsx}": [
