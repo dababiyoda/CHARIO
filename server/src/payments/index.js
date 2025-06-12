@@ -1,8 +1,6 @@
 const { config } = require('../../../src/config/env');
 const stripe = require('stripe')(config.STRIPE_KEY);
-const { Pool } = require('pg');
-
-const pool = new Pool();
+const { prisma } = require('../db');
 
 /**
  * Charge a customer's default card for a ride.
@@ -29,13 +27,10 @@ async function chargeCard({ rideId, amount, customerId }) {
       { idempotencyKey: rideId }
     );
 
-    const updateQuery = `
-      UPDATE rides
-      SET stripe_payment_id = $1,
-          status = 'confirmed'
-      WHERE id = $2
-    `;
-    await pool.query(updateQuery, [paymentIntent.id, rideId]);
+    await prisma.ride.update({
+      where: { id: rideId },
+      data: { stripe_payment_id: paymentIntent.id, status: 'confirmed' }
+    });
 
     return paymentIntent;
   } catch (err) {

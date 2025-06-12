@@ -1,6 +1,4 @@
-const { Pool } = require('pg');
-
-const pool = new Pool();
+const { prisma } = require('../db');
 
 /**
  * Record an audit event for PHI access.
@@ -8,9 +6,8 @@ const pool = new Pool();
  * @param {string} action - Description of the access
  */
 async function logAudit(userId, action) {
-  const query = `INSERT INTO audit_logs (user_id, action) VALUES ($1, $2)`;
   try {
-    await pool.query(query, [userId, action]);
+    await prisma.auditLog.create({ data: { user_id: userId, action } });
   } catch (err) {
     console.error('Failed to record audit log', err);
   }

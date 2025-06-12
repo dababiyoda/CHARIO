@@ -9,7 +9,7 @@ process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 
-const { Pool, __rides } = require('pg');
+const { PrismaClient, __rides } = require('@prisma/client');
 const { chargeCard } = require('../index');
 
 describe('chargeCard', () => {
@@ -19,7 +19,7 @@ describe('chargeCard', () => {
   });
 
   test('creates PaymentIntent and updates ride', async () => {
-    const pool = new Pool();
+    const prisma = new PrismaClient();
     await chargeCard({ rideId: 1, amount: 10, customerId: 'cus_1' });
     const ride = __rides.find(r => r.id === 1);
     expect(ride.stripe_payment_id).toBe('pi_1');
