@@ -1,0 +1,67 @@
+version: '3.8'
+services:
+  api:
+    image: node:18
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+    command: sh -c "npm install && npm start"
+    environment:
+      POSTGRES_DB: chario
+      POSTGRES_USER: chario
+      POSTGRES_PASSWORD: chario
+      PGHOST: postgres
+      DATABASE_URL: postgres://chario:chario@postgres:5432/chario
+      REDIS_URL: redis://redis:6379
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minio
+      S3_SECRET_KEY: minio123
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    ports:
+      - "3000:3000"
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: chario
+      POSTGRES_USER: chario
+      POSTGRES_PASSWORD: chario
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    volumes:
+      - minio-data:/data
+    ports:
+      - "9000:9000"
+
+volumes:
+  db-data:
+  redis-data:
+  minio-data:
