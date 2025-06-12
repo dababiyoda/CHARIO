@@ -79,6 +79,13 @@ A `Dockerfile` builds a production image of the API. Use `docker compose up` for
 - Access to PHI is audited in the `audit_logs` table.
 - `helmet` and request rate limiting are enabled by default.
 
+## Observability
+
+Logging is handled by `pino-http` and each request is tagged with an
+`X-Correlation-ID`. Metrics are exposed in Prometheus format at
+`/metrics` and include HTTP request latency and a counter of failed ride
+operations. These can be visualized with Grafana.
+
 ## Developer documentation
 
 Additional details on repository structure and local development can be found in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
