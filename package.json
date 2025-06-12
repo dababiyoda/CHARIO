@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand",
+    "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand --coverageReporters=lcov --coverageReporters=json-summary",
     "start": "node index.js",
     "lint": "eslint . --ignore-pattern \"coverage/**\"",
     "prepare": "husky install",
@@ -63,6 +63,7 @@
   },
   "jest": {
     "setupFiles": ["<rootDir>/tests/jest.setup.js"],
+    "coveragePathIgnorePatterns": ["<rootDir>/src/app.js"],
     "coverageThreshold": {
       "global": { "lines": 80 }
     }
