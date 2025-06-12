@@ -65,11 +65,8 @@ app.get('/health', async (req, res) => {
 });
 function metricsAuth(req, res, next) {
   const creds = basicAuth(req);
-  if (
-    !creds ||
-    creds.name !== 'metrics' ||
-    creds.pass !== config.METRICS_PASS
-  ) {
+  const user = config.METRICS_USER || 'metrics';
+  if (!creds || creds.name !== user || creds.pass !== config.METRICS_PASS) {
     res.set('WWW-Authenticate', 'Basic');
     return res.status(401).send('authentication required');
   }
