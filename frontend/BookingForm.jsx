@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Button from './components/Button.jsx';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -122,12 +123,9 @@ const BookingForm = () => {
           Card
         </label>
       </div>
-      <button
-        type="submit"
-        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-      >
+      <Button type="submit" variant="primary" className="w-full">
         Book Ride
-      </button>
+      </Button>
     </form>
   );
 };
