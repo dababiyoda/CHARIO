@@ -32,7 +32,6 @@ const httpLogger = pinoHttp({
   genReqId: (req) => req.headers['x-correlation-id'] || randomUUID(),
 });
 const log = getLogger(__filename);
-const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 function requireTLS(req, res, next) {
   if (config.NODE_ENV === 'test') {
     return next();
@@ -51,7 +50,7 @@ app.use((req, res, next) => {
 app.use(observeRequest);
 
 app.use(helmet());
-app.use(limiter);
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 app.use(express.static('public'));
 
 // Simple health endpoint for containers

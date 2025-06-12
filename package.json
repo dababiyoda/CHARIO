@@ -23,8 +23,8 @@
     "basic-auth": "^2.0.1",
     "dotenv": "^16.4.1",
     "express": "^5.1.0",
-    "express-rate-limit": "^6.7.0",
-    "helmet": "^7.0.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^7.2.0",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
@@ -44,23 +44,23 @@
     "debug": "^4.4.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "daisyui": "^5.0.43",
+    "dotenv-safe": "^9.1.0",
     "eslint": "^8.57.0",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "prettier": "^3.2.5",
-    "lint-staged": "^15.2.0",
     "husky": "^9.0.11",
     "jest": "^29.6.1",
+    "lint-staged": "^15.2.0",
     "make-coverage-badge": "^1.2.0",
+    "prettier": "^3.2.5",
     "prisma": "^6.9.0",
     "supertest": "^6.3.3",
-    "tailwindcss": "^4.1.10",
-    "cross-env": "^7.0.3",
-    "dotenv-safe": "^9.1.0"
+    "tailwindcss": "^4.1.10"
   },
   "jest": {
     "setupFiles": [
