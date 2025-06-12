@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const { payoutDriver } = require('./payouts');
+const { authenticate } = require('./auth');
 
 const app = express();
 app.use(express.json());
@@ -8,15 +9,12 @@ app.use(express.json());
 const pool = new Pool();
 
 function requireDriver(req, res, next) {
-  const userId = req.header('x-user-id');
-  const role = req.header('x-user-role');
-  if (!userId || !role) {
-    return res.status(401).json({ error: 'missing auth headers' });
+  if (!req.user) {
+    return res.status(401).json({ error: 'unauthenticated' });
   }
-  if (role !== 'driver') {
+  if (req.user.role !== 'driver') {
     return res.status(403).json({ error: 'driver role required' });
   }
-  req.user = { id: userId, role };
   next();
 }
 
@@ -59,7 +57,7 @@ app.post('/rides', async (req, res) => {
 });
 
 // PUT /rides/:id/assign handler
-app.put('/rides/:id/assign', requireDriver, async (req, res) => {
+app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -82,7 +80,7 @@ app.put('/rides/:id/assign', requireDriver, async (req, res) => {
 });
 
 // PUT /rides/:id/complete handler
-app.put('/rides/:id/complete', requireDriver, async (req, res) => {
+app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => {
   try {
     const { id } = req.params;
 
