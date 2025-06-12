@@ -108,10 +108,13 @@ A `Dockerfile` builds a production image of the API. Use `docker compose up` for
 
 ## Observability
 
-Logging is handled by `pino-http` and each request is tagged with an
-`X-Correlation-ID`. Metrics are exposed in Prometheus format at
-`/metrics` and include HTTP request latency and a counter of failed ride
-operations. These can be visualized with Grafana.
+Logging is handled by `pino-http` for requests and a module-based `pino`
+logger for application events. Logs are prettified during development and
+each request is tagged with an `X-Correlation-ID`. Metrics are exposed in
+Prometheus format at `/metrics`, protected with basic authentication, and
+include HTTP request latency and a counter of failed ride operations.
+These can be visualized with Grafana. The Docker image exposes port `9100`
+for metric scraping.
 
 ## Developer documentation
 

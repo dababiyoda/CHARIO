@@ -1,5 +1,8 @@
 const { prisma } = require('../db');
 const { createHash } = require('crypto');
+const { getLogger } = require('../logger');
+
+const log = getLogger(__filename);
 
 function audit(req, res, next) {
   res.on('finish', async () => {
@@ -16,7 +19,7 @@ function audit(req, res, next) {
         }
       });
     } catch (err) {
-      console.error('Failed to record audit log', err);
+      log.error({ err }, 'Failed to record audit log');
     }
   });
   next();

@@ -55,6 +55,9 @@ The API uses `helmet` and request rate limiting. TLS termination must be handled
 ### Observability
 
 `pino-http` logs each request with a correlation ID in the `X-Correlation-ID`
-header. Prometheus metrics are served from `/metrics` and include request
-latency and failed ride counters.
+header. Application logs use `pino` with pretty output in development and are
+available per module. Prometheus metrics are served from `/metrics` and include
+request latency and failed ride counters. Access to the metrics endpoint is
+protected with basic authentication. The container exposes port `9100` for
+Prometheus scraping.
 

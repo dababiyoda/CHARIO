@@ -14,6 +14,8 @@ const env = {
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   TWILIO_FROM_PHONE: process.env.TWILIO_FROM_PHONE,
   NODE_ENV: process.env.NODE_ENV,
+  METRICS_USER: process.env.METRICS_USER,
+  METRICS_PASS: process.env.METRICS_PASS,
 };
 
 const schema = z.object({

@@ -1,4 +1,9 @@
 const client = require('prom-client');
+const auth = require('basic-auth');
+const { config } = require('../config/env');
+const { getLogger } = require('./logger');
+
+const log = getLogger(__filename);
 
 client.collectDefaultMetrics();
 
@@ -26,6 +31,12 @@ function observeRequest(req, res, next) {
 }
 
 async function metricsEndpoint(req, res) {
+  const credentials = auth(req);
+  if (!credentials || credentials.name !== config.METRICS_USER || credentials.pass !== config.METRICS_PASS) {
+    res.set('WWW-Authenticate', 'Basic');
+    return res.status(401).send('authentication required');
+  }
+  log.debug('Serving metrics');
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());
 }
