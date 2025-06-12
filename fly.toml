@@ -1,7 +1,10 @@
 app = "chario"
-kill_signal = "SIGINT"
-kill_timeout = 5
+kill_signal = "SIGTERM"
+kill_timeout = 30
 [build]
-  dockerfile = "Dockerfile"
+  image = "ghcr.io/${{ github.repository }}:${{ github.sha }}"
 [env]
   PORT = "3000"
+[deploy]
+  strategy = "rolling"
+  release_command = "npx prisma migrate deploy"
