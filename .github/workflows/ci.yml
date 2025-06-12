@@ -29,6 +29,7 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - run: npx markdown-lint docs/**/*.md
       - run: npx prisma migrate deploy
         env:
           DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
