@@ -38,6 +38,7 @@ Key indexes exist on `rides.pickup_time` and `rides.status`.
 ## Request/response examples
 
 ### Create a ride
+Requires a JWT for a patient user in the `Authorization` header.
 
 Request:
 ```bash

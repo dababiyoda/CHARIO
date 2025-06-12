@@ -6,10 +6,11 @@ class Pool {
     if (sql.startsWith('INSERT INTO rides')) {
       const ride = {
         id: rides.length + 1,
-        pickup_time: params[0],
-        pickup_address: params[1],
-        dropoff_address: params[2],
-        payment_type: params[3],
+        patient_id: params[0],
+        pickup_time: params[1],
+        pickup_address: params[2],
+        dropoff_address: params[3],
+        payment_type: params[4],
         status: 'pending'
       };
       rides.push(ride);

@@ -35,7 +35,7 @@ values. Copy it to `.env` and update the credentials for local development.
 
 | Method & Path | Description |
 | --- | --- |
-| `POST /rides` | Create a ride request |
+| `POST /rides` | Authenticated patients create a ride request |
 | `GET /rides` | List rides (filter by status, driver or patient) |
 | `PUT /rides/:id/assign` | Assign the authenticated driver to a ride |
 | `PUT /rides/:id/complete` | Mark a ride complete and trigger payout |

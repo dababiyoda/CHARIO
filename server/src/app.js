@@ -33,8 +33,18 @@ function requireDriver(req, res, next) {
   next();
 }
 
+function requirePatient(req, res, next) {
+  if (!req.user) {
+    return res.status(401).json({ error: 'unauthenticated' });
+  }
+  if (req.user.role !== 'patient') {
+    return res.status(403).json({ error: 'patient role required' });
+  }
+  next();
+}
+
 // POST /rides handler
-app.post('/rides', async (req, res) => {
+app.post('/rides', authenticate, requirePatient, async (req, res) => {
   try {
     const { pickup_time, pickup_address, dropoff_address, payment_type } = req.body;
 
@@ -58,12 +68,12 @@ app.post('/rides', async (req, res) => {
     }
 
     const insertQuery = `
-      INSERT INTO rides (pickup_time, pickup_address, dropoff_address, payment_type, status)
-      VALUES ($1, $2, $3, $4, 'pending')
+      INSERT INTO rides (patient_id, pickup_time, pickup_address, dropoff_address, payment_type, status)
+      VALUES ($1, $2, $3, $4, $5, 'pending')
       RETURNING *
     `;
 
-    const { rows } = await pool.query(insertQuery, [pickupTime.toISOString(), pickup_address, dropoff_address, payment_type]);
+    const { rows } = await pool.query(insertQuery, [req.user.id, pickupTime.toISOString(), pickup_address, dropoff_address, payment_type]);
     if (rows[0] && rows[0].status === 'pending') {
       io.to('drivers').emit('new_ride', rows[0]);
     }

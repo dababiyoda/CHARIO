@@ -2,6 +2,7 @@ jest.mock('pg');
 
 const request = require('supertest');
 const { app, pool } = require('../app');
+const { issueToken } = require('../auth');
 const { __rides } = require('pg');
 
 describe('/rides booking endpoint', () => {
@@ -9,10 +10,13 @@ describe('/rides booking endpoint', () => {
     __rides.length = 0;
   });
 
+  const auth = `Bearer ${issueToken({ id: 'patient-1', role: 'patient' })}`;
+
   test('valid booking returns 201', async () => {
     const future = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
     const res = await request(app)
       .post('/rides')
+      .set('authorization', auth)
       .send({
         pickup_time: future,
         pickup_address: 'A',
@@ -26,6 +30,7 @@ describe('/rides booking endpoint', () => {
     const soon = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString();
     const res = await request(app)
       .post('/rides')
+      .set('authorization', auth)
       .send({
         pickup_time: soon,
         pickup_address: 'A',
@@ -42,6 +47,7 @@ describe('/rides booking endpoint', () => {
 
     await request(app)
       .post('/rides')
+      .set('authorization', auth)
       .send({
         pickup_time: future,
         pickup_address: 'A',
