@@ -47,7 +47,8 @@ CREATE TABLE rides (
     payment_type TEXT NOT NULL,
     status ride_status NOT NULL DEFAULT 'pending',
     insurance_id UUID NULL,
-    stripe_payment_id UUID REFERENCES payments(id) ON DELETE SET NULL,
+    -- use TEXT for Stripe PaymentIntent ids like "pi_..."
+    stripe_payment_id TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
