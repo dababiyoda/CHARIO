@@ -1,7 +1,10 @@
 const { config } = require('./src/config/env');
 const { server, scheduleReminders } = require('./src/app');
+const { getLogger } = require('./src/utils/logger');
+
+const logger = getLogger(__filename);
 
 const port = config.PORT || 3000;
 
 scheduleReminders();
-server.listen(port, () => console.log(`Server running on port ${port}`));
+server.listen(port, () => logger.info(`Server running on port ${port}`));

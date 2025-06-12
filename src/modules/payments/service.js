@@ -1,6 +1,9 @@
 const { config } = require('../../config/env');
 const stripe = require('stripe')(config.STRIPE_KEY);
 const { prisma } = require('../../utils/db');
+const { getLogger } = require('../../utils/logger');
+
+const log = getLogger(__filename);
 
 /**
  * Charge a customer's default card for a ride.
@@ -34,7 +37,7 @@ async function chargeCard({ rideId, amount, customerId }) {
 
     return paymentIntent;
   } catch (err) {
-    console.error('Failed to charge card', err);
+    log.error({ err }, 'Failed to charge card');
     throw err;
   }
 }

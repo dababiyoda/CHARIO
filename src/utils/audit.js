@@ -1,4 +1,7 @@
 const { prisma } = require('./db');
+const { getLogger } = require('./logger');
+
+const log = getLogger(__filename);
 
 /**
  * Record an audit event for PHI access.
@@ -9,7 +12,7 @@ async function logAudit(userId, action) {
   try {
     await prisma.auditLog.create({ data: { user_id: userId, action } });
   } catch (err) {
-    console.error('Failed to record audit log', err);
+    log.error({ err }, 'Failed to record audit log');
   }
 }
 

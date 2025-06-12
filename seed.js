@@ -1,6 +1,9 @@
 const { Client } = require('pg');
 
 const { config } = require('./src/config/env');
+const { getLogger } = require('./src/utils/logger');
+
+const log = getLogger(__filename);
 
 const client = new Client({
   connectionString: config.DATABASE_URL,
@@ -49,9 +52,9 @@ async function seed() {
       );
     }
 
-    console.log('Seed data inserted successfully.');
+    log.info('Seed data inserted successfully.');
   } catch (err) {
-    console.error('Error inserting seed data:', err);
+    log.error({ err }, 'Error inserting seed data');
   } finally {
     await client.end();
   }

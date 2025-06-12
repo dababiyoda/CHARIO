@@ -2,6 +2,9 @@ const express = require('express');
 const { prisma } = require('../../utils/db');
 const { config } = require('../../config/env');
 const stripe = require('stripe')(config.STRIPE_KEY || '');
+const { getLogger } = require('../../utils/logger');
+
+const log = getLogger(__filename);
 
 
 function createWebhookRouter(io) {
@@ -32,7 +35,7 @@ function createWebhookRouter(io) {
 
         return res.json({ received: true });
       } catch (err) {
-        console.error('Invalid stripe signature', err);
+        log.error({ err }, 'Invalid stripe signature');
         return res.status(400).send('invalid signature');
       }
     }

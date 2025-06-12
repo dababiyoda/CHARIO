@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { prisma } = require('./utils/db');
 const pinoHttp = require('pino-http');
+const { getLogger } = require('./utils/logger');
 const { randomUUID, createHash } = require('crypto');
 const { observeRequest, metricsEndpoint } = require('./utils/metrics');
 const { config } = require('./config/env');
@@ -25,9 +26,10 @@ const {
 } = require('./utils/middleware/validate');
 
 const app = express();
-const logger = pinoHttp({
+const httpLogger = pinoHttp({
   genReqId: (req) => req.headers['x-correlation-id'] || randomUUID()
 });
+const log = getLogger(__filename);
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 function requireTLS(req, res, next) {
   if (config.NODE_ENV === 'test') {
@@ -39,7 +41,7 @@ function requireTLS(req, res, next) {
   return res.status(426).send('HTTPS required');
 }
 app.use(requireTLS);
-app.use(logger);
+app.use(httpLogger);
 app.use((req, res, next) => {
   res.setHeader('x-correlation-id', req.id);
   next();
@@ -138,7 +140,7 @@ app.post('/rides', validate(bookRideSchema), async (req, res) => {
     await logAudit(req.user ? req.user.id : null, 'POST /rides');
     return res.status(201).json(ride);
   } catch (err) {
-    console.error('Failed to create ride', err);
+    log.error({ err }, 'Failed to create ride');
     return res.status(500).json({ error: 'internal server error' });
   }
 });
@@ -190,7 +192,7 @@ app.get('/rides', authenticate, validate(ridesQuerySchema), async (req, res) => 
     await logAudit(req.user.id, 'GET /rides');
     return res.json(rides);
   } catch (err) {
-    console.error('Failed to fetch rides', err);
+    log.error({ err }, 'Failed to fetch rides');
     return res.status(500).json({ error: 'internal server error' });
   }
 });
@@ -222,7 +224,7 @@ app.put(
     await logAudit(req.user.id, `PUT /rides/${id}/assign`);
     return res.json(updated);
   } catch (err) {
-    console.error('Failed to assign ride', err);
+    log.error({ err }, 'Failed to assign ride');
     return res.status(500).json({ error: 'internal server error' });
   }
 });
@@ -263,7 +265,7 @@ app.put(
 
     return res.json(updated);
   } catch (err) {
-    console.error('Failed to complete ride', err);
+    log.error({ err }, 'Failed to complete ride');
     return res.status(500).json({ error: 'internal server error' });
   }
 });
@@ -291,7 +293,7 @@ function scheduleReminders() {
         await sendSMS(ride.driver.phone, `Reminder: you have a ride scheduled for ${timeStr}.`);
       }
     } catch (err) {
-      console.error('Failed to send ride reminders', err);
+      log.error({ err }, 'Failed to send ride reminders');
     }
   });
 }
