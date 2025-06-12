@@ -18,4 +18,17 @@ describe('chargeCard', () => {
     expect(ride.stripe_payment_id).toBe('pi_1');
     expect(ride.status).toBe('confirmed');
   });
+
+  test('missing parameters throw error', async () => {
+    await expect(chargeCard({ amount: 10, customerId: 'c' }))
+      .rejects.toThrow('rideId, amount, and customerId are required');
+  });
+
+  test('stripe errors propagate', async () => {
+    const stripeFactory = require('stripe');
+    const stripeInstance = stripeFactory.mock.results[0].value;
+    stripeInstance.paymentIntents.create.mockRejectedValueOnce(new Error('bad'));
+    await expect(chargeCard({ rideId: 1, amount: 10, customerId: 'cus_1' }))
+      .rejects.toThrow('bad');
+  });
 });
