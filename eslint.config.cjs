@@ -1,11 +1,23 @@
+const reactPlugin = require('eslint-plugin-react');
+const jsxA11y = require('eslint-plugin-jsx-a11y');
+
 module.exports = [
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,jsx}'],
     ignores: ['node_modules/**', 'coverage/**'],
     languageOptions: {
-      ecmaVersion: 12,
-      sourceType: 'script',
+      ecmaVersion: 2020,
+      sourceType: 'module',
+      parserOptions: {
+        ecmaFeatures: { jsx: true },
+      },
     },
-    rules: {},
+    plugins: {
+      react: reactPlugin,
+      'jsx-a11y': jsxA11y,
+    },
+    rules: {
+      ...jsxA11y.configs.recommended.rules,
+    },
   },
 ];
