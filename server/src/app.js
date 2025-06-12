@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { Pool } = require('pg');
 const pinoHttp = require('pino-http');
-const { randomUUID } = require('crypto');
+const { randomUUID, createHash } = require('crypto');
 const { observeRequest, metricsEndpoint } = require('./metrics');
 let pool;
 const { config } = require('../../src/config/env');
@@ -14,8 +14,16 @@ const { sendSMS } = require('./rides/sms');
 const cron = require('node-cron');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const Joi = require('joi');
 const { logAudit } = require('./audit');
+const {
+  validate,
+  bookRideSchema,
+  loginSchema,
+  signupSchema,
+  ridesQuerySchema,
+  idSchema
+} = require('./middleware/validate');
+const { issueToken } = require('./auth');
 
 const app = express();
 const logger = pinoHttp({
@@ -47,20 +55,6 @@ app.use(express.static('public'));
 app.get('/healthz', (req, res) => res.send('ok'));
 app.get('/metrics', metricsEndpoint);
 
-const rideSchema = Joi.object({
-  pickup_time: Joi.string().isoDate().required(),
-  pickup_address: Joi.string().required(),
-  dropoff_address: Joi.string().required(),
-  payment_type: Joi.string().valid('insurance', 'card').required()
-});
-
-const ridesQuerySchema = Joi.object({
-  status: Joi.string(),
-  driver_id: Joi.string(),
-  patient_id: Joi.string()
-});
-
-const idSchema = Joi.string().guid({ version: 'uuidv4' });
 
 // HTTP and Socket.io server setup
 const server = http.createServer(app);
@@ -75,6 +69,31 @@ io.on('connection', (socket) => {
 pool = new Pool();
 app.use(createWebhookRouter(io));
 app.use(express.json());
+
+const users = new Map();
+
+app.post('/signup', validate(signupSchema), (req, res) => {
+  const { email, password } = req.validated.body;
+  if (users.has(email)) {
+    return res.status(409).json({ error: 'email already registered' });
+  }
+  const id = randomUUID();
+  const hash = createHash('sha256').update(password).digest('hex');
+  users.set(email, { id, hash });
+  const token = issueToken({ id, role: 'patient' });
+  res.status(201).json({ token });
+});
+
+app.post('/login', validate(loginSchema), (req, res) => {
+  const { email, password } = req.validated.body;
+  const user = users.get(email);
+  const hash = createHash('sha256').update(password).digest('hex');
+  if (!user || user.hash !== hash) {
+    return res.status(401).json({ error: 'invalid credentials' });
+  }
+  const token = issueToken({ id: user.id, role: 'patient' });
+  res.json({ token });
+});
 
 function requireDriver(req, res, next) {
   if (!req.user) {
@@ -99,19 +118,11 @@ function authorize(...roles) {
 }
 
 // POST /rides handler
-app.post('/rides', async (req, res) => {
+app.post('/rides', validate(bookRideSchema), async (req, res) => {
   try {
-    const { error, value } = rideSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-    const { pickup_time, pickup_address, dropoff_address, payment_type } = value;
+    const { pickup_time, pickup_address, dropoff_address, payment_type } = req.validated.body;
 
     const pickupTime = new Date(pickup_time);
-    const msInWeek = 7 * 24 * 60 * 60 * 1000;
-    if (pickupTime.getTime() - Date.now() < msInWeek) {
-      return res.status(400).json({ error: 'pickup_time must be at least 7 days in the future' });
-    }
 
     const insertQuery = `
       INSERT INTO rides (pickup_time, pickup_address, dropoff_address, payment_type, status)
@@ -132,13 +143,9 @@ app.post('/rides', async (req, res) => {
 });
 
 // GET /rides handler
-app.get('/rides', authenticate, async (req, res) => {
+app.get('/rides', authenticate, validate(ridesQuerySchema), async (req, res) => {
   try {
-    const { error, value } = ridesQuerySchema.validate(req.query);
-    if (error) {
-      return res.status(400).json({ error: error.details[0].message });
-    }
-    const { status, driver_id, patient_id } = value;
+    const { status, driver_id, patient_id } = req.validated.query;
     const clauses = [];
     const values = [];
 
@@ -183,13 +190,14 @@ app.get('/rides', authenticate, async (req, res) => {
 });
 
 // PUT /rides/:id/assign handler
-app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
-  try {
-    const { error, value } = idSchema.validate(req.params.id);
-    if (error) {
-      return res.status(400).json({ error: 'invalid id' });
-    }
-    const id = value;
+app.put(
+  '/rides/:id/assign',
+  authenticate,
+  requireDriver,
+  validate(idSchema),
+  async (req, res) => {
+    try {
+      const id = req.validated.params.id;
 
     // fetch ride to check if already assigned
     const { rows } = await pool.query('SELECT driver_id FROM rides WHERE id = $1', [id]);
@@ -211,13 +219,14 @@ app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
 });
 
 // PUT /rides/:id/complete handler
-app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => {
-  try {
-    const { error, value } = idSchema.validate(req.params.id);
-    if (error) {
-      return res.status(400).json({ error: 'invalid id' });
-    }
-    const id = value;
+app.put(
+  '/rides/:id/complete',
+  authenticate,
+  requireDriver,
+  validate(idSchema),
+  async (req, res) => {
+    try {
+      const id = req.validated.params.id;
 
     const { rows } = await pool.query(
       'SELECT driver_id, status FROM rides WHERE id = $1',
