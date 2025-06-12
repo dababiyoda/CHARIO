@@ -38,7 +38,7 @@ jobs:
           DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
       - run: bash .github/scripts/coverage-gate.sh
       - uses: github/codeql-action/analyze@v3
-      - uses: trufflesecurity/trufflehog@v3
+      - uses: trufflesecurity/trufflehog@v3.89.1
         with:
           path: '.'
           github_token: ${{ secrets.GITHUB_TOKEN }}
