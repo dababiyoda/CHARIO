@@ -12,7 +12,8 @@
     "test:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary && npx --yes make-coverage-badge --report-path coverage/coverage-summary.json --output-path coverage.svg",
     "migrate": "knex migrate:latest",
     "seed": "node seed.js",
-    "cron:reconcile": "node scripts/reconcile.js"
+    "cron:reconcile": "node scripts/reconcile.js",
+    "worker:payouts": "node src/workers/payout.worker.js"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +32,8 @@
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "node-cron": "^3.0.2",
+    "bullmq": "^4.10.3",
+    "ioredis": "^5.3.2",
     "pg": "^8.16.0",
     "pino": "^9.7.0",
     "pino-http": "^10.5.0",
