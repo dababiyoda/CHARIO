@@ -1,7 +1,8 @@
-const { config: load } = require('dotenv');
+const { config: dotenvSafe } = require('dotenv-safe');
 const { z } = require('zod');
 
-load();
+// Load environment variables. Tests inject values so allow empty ones.
+dotenvSafe({ allowEmptyValues: true });
 
 const env = {
   DATABASE_URL: process.env.DATABASE_URL,
@@ -32,7 +33,7 @@ const schema = z.object({
 
 const result = schema.safeParse(env);
 if (!result.success) {
-  const missing = result.error.errors.map(e => e.path[0]).join(', ');
+  const missing = result.error.errors.map((e) => e.path[0]).join(', ');
   throw new Error(`Missing required env vars: ${missing}`);
 }
 
