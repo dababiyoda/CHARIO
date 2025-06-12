@@ -1,4 +1,6 @@
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const { Pool } = require('pg');
 const { payoutDriver } = require('./payouts');
 const { authenticate } = require('./auth');
@@ -7,6 +9,16 @@ const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
+
+// HTTP and Socket.io server setup
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: '*' } });
+
+io.on('connection', (socket) => {
+  socket.on('join_drivers', () => {
+    socket.join('drivers');
+  });
+});
 
 const pool = new Pool();
 
@@ -51,6 +63,9 @@ app.post('/rides', async (req, res) => {
     `;
 
     const { rows } = await pool.query(insertQuery, [pickupTime.toISOString(), pickup_address, dropoff_address, payment_type]);
+    if (rows[0] && rows[0].status === 'pending') {
+      io.to('drivers').emit('new_ride', rows[0]);
+    }
     return res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Failed to create ride', err);
@@ -148,4 +163,4 @@ cron.schedule('0 * * * *', async () => {
 });
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+server.listen(port, () => console.log(`Server running on port ${port}`));
