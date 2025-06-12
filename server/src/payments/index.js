@@ -23,6 +23,7 @@ async function chargeCard({ rideId, amount, customerId }) {
         customer: customerId,
         automatic_payment_methods: { enabled: true },
         confirm: true,
+        metadata: { ride_id: String(rideId) },
       },
       { idempotencyKey: rideId }
     );
