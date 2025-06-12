@@ -10,6 +10,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE patients (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
+    phone TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -17,6 +18,7 @@ CREATE TABLE patients (
 CREATE TABLE drivers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
+    phone TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -40,6 +42,9 @@ CREATE TABLE rides (
     patient_id UUID REFERENCES patients(id) ON DELETE SET NULL,
     driver_id UUID REFERENCES drivers(id) ON DELETE SET NULL,
     pickup_time TIMESTAMPTZ NOT NULL,
+    pickup_address TEXT NOT NULL,
+    dropoff_address TEXT NOT NULL,
+    payment_type TEXT NOT NULL,
     status ride_status NOT NULL DEFAULT 'pending',
     insurance_id UUID NULL,
     stripe_payment_id UUID REFERENCES payments(id) ON DELETE SET NULL,

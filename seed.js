@@ -27,10 +27,18 @@ async function seed() {
     for (let i = 1; i <= 3; i++) {
       const patientId = i; // simple mapping
       const driverId = i; // simple mapping
-      const scheduled = new Date(Date.now() + i * 86400000); // i days from now
+      const pickupTime = new Date(Date.now() + i * 86400000); // i days from now
       await client.query(
-        'INSERT INTO rides (patient_id, driver_id, scheduled_time, status) VALUES ($1, $2, $3, $4)',
-        [patientId, driverId, scheduled, 'pending']
+        'INSERT INTO rides (patient_id, driver_id, pickup_time, pickup_address, dropoff_address, payment_type, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [
+          patientId,
+          driverId,
+          pickupTime,
+          `Patient ${i} Home`,
+          `Clinic ${i}`,
+          i % 2 === 0 ? 'card' : 'insurance',
+          'pending',
+        ]
       );
     }
 
