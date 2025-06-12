@@ -1,9 +1,8 @@
 const AWS = require('aws-sdk');
-const { Pool } = require('pg');
 const { Readable } = require('stream');
 
 const s3 = new AWS.S3();
-const pool = new Pool();
+const pool = require('./db');
 
 /**
  * Streams a file to S3 and stores metadata in insurance_docs.

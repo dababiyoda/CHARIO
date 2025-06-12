@@ -1,7 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { Pool } = require('pg');
-
-const pool = new Pool();
+const pool = require('./db');
 
 /**
  * Charge a customer's default card for a ride.

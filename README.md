@@ -61,3 +61,9 @@ docker compose up
 
 The `Dockerfile` builds a production image of the API.
 
+## Project structure
+
+Server code lives under `server/src`. Feature modules like rides, payments,
+insurance and auth are colocated with their unit tests in this folder. The root
+`index.js` file simply loads environment variables and starts the HTTP server.
+
