@@ -31,7 +31,10 @@ describe('stripe webhook router', () => {
       type: 'payment_intent.succeeded',
       data: { object: { id: 'pi_123' } },
     });
-    const header = stripe.webhooks.generateTestHeaderString({ payload, secret: 'whsec_test' });
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: 'whsec_test',
+    });
     const res = await request(app)
       .post('/webhook/stripe')
       .set('Stripe-Signature', header)
@@ -43,7 +46,10 @@ describe('stripe webhook router', () => {
   });
 
   test('invalid signature returns 400', async () => {
-    const payload = JSON.stringify({ type: 'payment_intent.succeeded', data: { object: { id: 'pi_123' } } });
+    const payload = JSON.stringify({
+      type: 'payment_intent.succeeded',
+      data: { object: { id: 'pi_123' } },
+    });
     const res = await request(app)
       .post('/webhook/stripe')
       .set('Stripe-Signature', 'bad')

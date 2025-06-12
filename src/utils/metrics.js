@@ -10,12 +10,12 @@ client.collectDefaultMetrics();
 const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
-  labelNames: ['method', 'route', 'status_code']
+  labelNames: ['method', 'route', 'status_code'],
 });
 
 const failedRides = new client.Counter({
   name: 'failed_rides_total',
-  help: 'Total number of failed ride operations'
+  help: 'Total number of failed ride operations',
 });
 
 function observeRequest(req, res, next) {
@@ -32,7 +32,11 @@ function observeRequest(req, res, next) {
 
 async function metricsEndpoint(req, res) {
   const credentials = auth(req);
-  if (!credentials || credentials.name !== config.METRICS_USER || credentials.pass !== config.METRICS_PASS) {
+  if (
+    !credentials ||
+    credentials.name !== config.METRICS_USER ||
+    credentials.pass !== config.METRICS_PASS
+  ) {
     res.set('WWW-Authenticate', 'Basic');
     return res.status(401).send('authentication required');
   }

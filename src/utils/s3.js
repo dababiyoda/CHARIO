@@ -6,7 +6,7 @@ const s3 = new AWS.S3({
   accessKeyId: config.S3_ACCESS_KEY || undefined,
   secretAccessKey: config.S3_SECRET_KEY || undefined,
   s3ForcePathStyle: !!config.S3_ENDPOINT,
-  signatureVersion: 'v4'
+  signatureVersion: 'v4',
 });
 
 async function putObject(key, body) {
@@ -18,7 +18,7 @@ async function putObject(key, body) {
       Bucket: config.S3_BUCKET,
       Key: key,
       Body: body,
-      ACL: 'private'
+      ACL: 'private',
     })
     .promise();
 }
@@ -30,7 +30,7 @@ function getPresignedUrl(key) {
   return s3.getSignedUrl('getObject', {
     Bucket: config.S3_BUCKET,
     Key: key,
-    Expires: 60 * 10
+    Expires: 60 * 10,
   });
 }
 

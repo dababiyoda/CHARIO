@@ -41,6 +41,7 @@ Key indexes exist on `rides.pickup_time` and `rides.status`.
 ### Create a ride
 
 Request:
+
 ```bash
 POST /rides
 Content-Type: application/json
@@ -54,6 +55,7 @@ Content-Type: application/json
 ```
 
 Response:
+
 ```json
 {
   "id": "<uuid>",

@@ -6,7 +6,6 @@ const { getLogger } = require('../../utils/logger');
 
 const log = getLogger(__filename);
 
-
 function createWebhookRouter(io) {
   const router = express.Router();
 
@@ -19,14 +18,14 @@ function createWebhookRouter(io) {
         const event = stripe.webhooks.constructEvent(
           req.body,
           sig,
-          config.STRIPE_WEBHOOK_SECRET
+          config.STRIPE_WEBHOOK_SECRET,
         );
 
         if (event.type === 'payment_intent.succeeded') {
           const intent = event.data.object;
           const ride = await prisma.ride.update({
             where: { stripe_payment_id: intent.id },
-            data: { status: 'confirmed' }
+            data: { status: 'confirmed' },
           });
           if (ride && io) {
             io.to('drivers').emit('payment_confirmed', ride);
@@ -38,7 +37,7 @@ function createWebhookRouter(io) {
         log.error({ err }, 'Invalid stripe signature');
         return res.status(400).send('invalid signature');
       }
-    }
+    },
   );
 
   return router;

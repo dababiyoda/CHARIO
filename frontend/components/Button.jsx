@@ -5,7 +5,12 @@ const variantClasses = {
   accent: 'bg-accent text-white hover:bg-accent/90',
 };
 
-const Button = ({ variant = 'primary', className = '', children, ...props }) => {
+const Button = ({
+  variant = 'primary',
+  className = '',
+  children,
+  ...props
+}) => {
   const color = variantClasses[variant] || variantClasses.primary;
   return (
     <button

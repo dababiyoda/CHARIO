@@ -1,87 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <title>Driver Dashboard</title>
-  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-feather/dist/react-feather.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-    }
-    .card {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-    .card-title {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    button {
-      margin-top: 10px;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Driver Dashboard</title>
+    <script
+      crossorigin
+      src="https://unpkg.com/react@17/umd/react.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/babel-standalone@6/babel.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://unpkg.com/react-feather/dist/react-feather.min.js"
+    ></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      .card {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .card-title {
+        font-size: 18px;
+        font-weight: bold;
+      }
+      button {
+        margin-top: 10px;
+        padding: 6px 10px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-    const { Calendar, Map, DollarSign } = ReactFeather;
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+      const { Calendar, Map, DollarSign } = ReactFeather;
 
-    function BottomNav() {
-      return (
-        <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex justify-around p-2">
-          <button aria-label="book"><Calendar /></button>
-          <button aria-label="rides"><Map /></button>
-          <button aria-label="earnings"><DollarSign /></button>
-        </nav>
+      function BottomNav() {
+        return (
+          <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex justify-around p-2">
+            <button aria-label="book">
+              <Calendar />
+            </button>
+            <button aria-label="rides">
+              <Map />
+            </button>
+            <button aria-label="earnings">
+              <DollarSign />
+            </button>
+          </nav>
+        );
+      }
+
+      function DriverDashboard() {
+        const [rides, setRides] = useState([]);
+
+        useEffect(() => {
+          fetch('/rides?status=confirmed&driver_id=me')
+            .then((res) => res.json())
+            .then((data) => setRides(data))
+            .catch((err) => console.error('Failed to fetch rides', err));
+        }, []);
+
+        const openNavigation = (address) => {
+          const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+          window.open(url, '_blank');
+        };
+
+        return (
+          <div>
+            <h1>Driver Dashboard</h1>
+            {rides.map((ride) => (
+              <div key={ride.id} className="card">
+                <div className="card-title">{ride.patient_name}</div>
+                <div>
+                  Pickup Time: {new Date(ride.pickup_time).toLocaleString()}
+                </div>
+                <button onClick={() => openNavigation(ride.pickup_address)}>
+                  Start Navigation
+                </button>
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      ReactDOM.render(
+        <>
+          <DriverDashboard />
+          <BottomNav />
+        </>,
+        document.getElementById('root'),
       );
-    }
-
-    function DriverDashboard() {
-      const [rides, setRides] = useState([]);
-
-      useEffect(() => {
-        fetch('/rides?status=confirmed&driver_id=me')
-          .then(res => res.json())
-          .then(data => setRides(data))
-          .catch(err => console.error('Failed to fetch rides', err));
-      }, []);
-
-      const openNavigation = (address) => {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
-        window.open(url, '_blank');
-      };
-
-      return (
-        <div>
-          <h1>Driver Dashboard</h1>
-          {rides.map(ride => (
-            <div key={ride.id} className="card">
-              <div className="card-title">{ride.patient_name}</div>
-              <div>Pickup Time: {new Date(ride.pickup_time).toLocaleString()}</div>
-              <button onClick={() => openNavigation(ride.pickup_address)}>Start Navigation</button>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    ReactDOM.render(
-      <>
-        <DriverDashboard />
-        <BottomNav />
-      </>,
-      document.getElementById('root')
-    );
-  </script>
-</body>
+    </script>
+  </body>
 </html>

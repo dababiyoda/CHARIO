@@ -19,7 +19,7 @@ async function uploadInsurance(fileBuffer, fileName, rideId) {
   await putObject(fileName, stream);
 
   await prisma.insuranceDoc.create({
-    data: { ride_id: rideId, s3_key: fileName }
+    data: { ride_id: rideId, s3_key: fileName },
   });
 }
 
@@ -30,7 +30,7 @@ async function uploadInsurance(fileBuffer, fileName, rideId) {
  */
 async function getInsuranceUrl(docId) {
   const doc = await prisma.insuranceDoc.findUnique({
-    where: { id: docId }
+    where: { id: docId },
   });
   if (!doc) throw new Error('document not found');
   return getPresignedUrl(doc.s3_key);

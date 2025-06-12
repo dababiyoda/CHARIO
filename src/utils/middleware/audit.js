@@ -15,8 +15,8 @@ function audit(req, res, next) {
           user_id: req.user ? req.user.id : null,
           method: req.method,
           path: req.path,
-          body_hash: bodyHash
-        }
+          body_hash: bodyHash,
+        },
       });
     } catch (err) {
       log.error({ err }, 'Failed to record audit log');

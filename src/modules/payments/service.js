@@ -27,12 +27,12 @@ async function chargeCard({ rideId, amount, customerId }) {
         confirm: true,
         metadata: { ride_id: String(rideId) },
       },
-      { idempotencyKey: rideId }
+      { idempotencyKey: rideId },
     );
 
     await prisma.ride.update({
       where: { id: rideId },
-      data: { stripe_payment_id: paymentIntent.id, status: 'confirmed' }
+      data: { stripe_payment_id: paymentIntent.id, status: 'confirmed' },
     });
 
     return paymentIntent;

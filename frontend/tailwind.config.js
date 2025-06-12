@@ -1,9 +1,6 @@
 const colors = require('tailwindcss/colors');
 module.exports = {
-  content: [
-    "./public/**/*.html",
-    "./frontend/**/*.{js,jsx}"
-  ],
+  content: ['./public/**/*.html', './frontend/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
@@ -18,8 +15,8 @@ module.exports = {
     themes: [
       {
         mytheme: {
-          'primary': '#0d6efd',
-          'accent': '#34c759',
+          primary: '#0d6efd',
+          accent: '#34c759',
         },
       },
     ],

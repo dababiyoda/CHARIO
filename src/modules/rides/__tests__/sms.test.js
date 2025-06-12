@@ -1,6 +1,8 @@
-jest.mock('twilio', () => jest.fn(() => ({
-  messages: { create: jest.fn().mockResolvedValue(true) }
-})));
+jest.mock('twilio', () =>
+  jest.fn(() => ({
+    messages: { create: jest.fn().mockResolvedValue(true) },
+  })),
+);
 
 describe('sendSMS', () => {
   beforeEach(() => {
@@ -20,6 +22,10 @@ describe('sendSMS', () => {
     await sendSMS('+2', 'hi');
     expect(twilio).toHaveBeenCalledWith('sid', 'token');
     const client = twilio.mock.results[0].value;
-    expect(client.messages.create).toHaveBeenCalledWith({ from: '+1', to: '+2', body: 'hi' });
+    expect(client.messages.create).toHaveBeenCalledWith({
+      from: '+1',
+      to: '+2',
+      body: 'hi',
+    });
   });
 });

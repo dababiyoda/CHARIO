@@ -14,7 +14,7 @@ jobs:
           POSTGRES_USER: chario
           POSTGRES_PASSWORD: chario
           POSTGRES_DB: chario_test
-        ports: ["5432:5432"]
+        ports: ['5432:5432']
         options: >-
           --health-cmd="pg_isready -U chario"
           --health-interval=10s
@@ -28,8 +28,8 @@ jobs:
       - run: npm ci
       - run: npx prisma migrate deploy
         env:
-          DATABASE_URL: "postgresql://chario:chario@localhost:5432/chario_test"
+          DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
       - run: npm run test:coverage
         env:
-          DATABASE_URL: "postgresql://chario:chario@localhost:5432/chario_test"
+          DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
       - run: bash .github/scripts/coverage-gate.sh
