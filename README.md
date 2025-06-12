@@ -12,6 +12,12 @@ docker compose up
 ```
 
 This boots Postgres, Redis, MinIO and the API server with sample configuration.
+Database migrations and seed data run automatically inside the API container. If
+you run the app without Docker, execute:
+```bash
+npm run migrate && npm run seed
+```
+before starting the server.
 
 ## Environment variables
 

@@ -25,7 +25,7 @@ sequenceDiagram
 
 ## Database schema
 
-The PostgreSQL schema is defined in `schema.sql` and contains the following tables:
+The PostgreSQL schema is managed through Knex migrations and contains the following tables:
 
 - `patients` – registered riders
 - `drivers` – available drivers

@@ -36,7 +36,7 @@ This document provides an overview of the repository layout and tips for local d
 
 Sample data can be inserted by running:
 ```bash
-node seed.js
+npm run seed
 ```
 Make sure the database defined by `DATABASE_URL` is running and accessible.
 
