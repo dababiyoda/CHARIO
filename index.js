@@ -2,6 +2,8 @@ const express = require('express');
 const { Pool } = require('pg');
 const { payoutDriver } = require('./payouts');
 const { authenticate } = require('./auth');
+const { sendSMS } = require('./sms');
+const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
@@ -117,6 +119,31 @@ app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => 
   } catch (err) {
     console.error('Failed to complete ride', err);
     return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// Cron job: send reminders for rides happening in 24 hours
+cron.schedule('0 * * * *', async () => {
+  const now = new Date();
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const in25h = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+  const query = `
+    SELECT r.pickup_time, p.phone AS patient_phone, d.phone AS driver_phone
+    FROM rides r
+    JOIN patients p ON r.patient_id = p.id
+    JOIN drivers d ON r.driver_id = d.id
+    WHERE r.status = 'confirmed'
+      AND r.pickup_time >= $1 AND r.pickup_time < $2
+  `;
+  try {
+    const { rows } = await pool.query(query, [in24h.toISOString(), in25h.toISOString()]);
+    for (const ride of rows) {
+      const timeStr = new Date(ride.pickup_time).toLocaleString();
+      await sendSMS(ride.patient_phone, `Reminder: your ride is scheduled for ${timeStr}.`);
+      await sendSMS(ride.driver_phone, `Reminder: you have a ride scheduled for ${timeStr}.`);
+    }
+  } catch (err) {
+    console.error('Failed to send ride reminders', err);
   }
 });
 
