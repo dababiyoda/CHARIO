@@ -56,3 +56,7 @@ npm test
 ## Docker image
 
 A `Dockerfile` builds a production image of the API. Use `docker compose up` for local development.
+
+## Developer documentation
+
+Additional details on repository structure and local development can be found in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
