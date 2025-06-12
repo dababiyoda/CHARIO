@@ -4,7 +4,17 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const fromPhone = process.env.TWILIO_FROM_PHONE;
 
-const client = twilio(accountSid, authToken);
+let client;
+
+function getClient() {
+  if (!accountSid || !authToken) {
+    throw new Error('Twilio credentials not configured');
+  }
+  if (!client) {
+    client = twilio(accountSid, authToken);
+  }
+  return client;
+}
 
 /**
  * Send an SMS message using Twilio.
@@ -12,13 +22,13 @@ const client = twilio(accountSid, authToken);
  * @param {string} message - Message body.
  */
 async function sendSMS(to, message) {
-  if (!accountSid || !authToken || !fromPhone) {
+  if (!fromPhone) {
     throw new Error('Twilio credentials not configured');
   }
   if (!to || !message) {
     throw new Error('to and message are required');
   }
-  await client.messages.create({
+  await getClient().messages.create({
     from: fromPhone,
     to,
     body: message,
