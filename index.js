@@ -74,6 +74,52 @@ app.post('/rides', async (req, res) => {
   }
 });
 
+// GET /rides handler
+app.get('/rides', authenticate, async (req, res) => {
+  try {
+    const { status, driver_id, patient_id } = req.query;
+    const clauses = [];
+    const values = [];
+
+    if (status) {
+      clauses.push(`status = $${values.length + 1}`);
+      values.push(status);
+    }
+
+    if (driver_id) {
+      let id = driver_id;
+      if (driver_id === 'me') {
+        if (!req.user || req.user.role !== 'driver') {
+          return res.status(403).json({ error: 'driver role required' });
+        }
+        id = req.user.id;
+      }
+      clauses.push(`driver_id = $${values.length + 1}`);
+      values.push(id);
+    }
+
+    if (patient_id) {
+      let id = patient_id;
+      if (patient_id === 'me') {
+        if (!req.user || req.user.role !== 'patient') {
+          return res.status(403).json({ error: 'patient role required' });
+        }
+        id = req.user.id;
+      }
+      clauses.push(`patient_id = $${values.length + 1}`);
+      values.push(id);
+    }
+
+    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
+    const query = `SELECT * FROM rides${where} ORDER BY pickup_time`;
+    const { rows } = await pool.query(query, values);
+    return res.json(rows);
+  } catch (err) {
+    console.error('Failed to fetch rides', err);
+    return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
 // PUT /rides/:id/assign handler
 app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
   try {

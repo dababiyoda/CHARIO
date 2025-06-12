@@ -7,36 +7,41 @@ const client = new Client({
 async function seed() {
   await client.connect();
   try {
+    const patientIds = [];
+    const driverIds = [];
+
     // Insert patients
     for (let i = 1; i <= 5; i++) {
-      await client.query(
-        'INSERT INTO patients (name, phone) VALUES ($1, $2)',
+      const { rows } = await client.query(
+        'INSERT INTO patients (name, phone) VALUES ($1, $2) RETURNING id',
         [`Patient ${i}`, `555-000${i}`]
       );
+      patientIds.push(rows[0].id);
     }
 
     // Insert drivers
     for (let i = 1; i <= 3; i++) {
-      await client.query(
-        'INSERT INTO drivers (name, phone) VALUES ($1, $2)',
+      const { rows } = await client.query(
+        'INSERT INTO drivers (name, phone) VALUES ($1, $2) RETURNING id',
         [`Driver ${i}`, `555-100${i}`]
       );
+      driverIds.push(rows[0].id);
     }
 
     // Insert rides
-    for (let i = 1; i <= 3; i++) {
-      const patientId = i; // simple mapping
-      const driverId = i; // simple mapping
-      const pickupTime = new Date(Date.now() + i * 86400000); // i days from now
+    for (let i = 0; i < 3; i++) {
+      const patientId = patientIds[i % patientIds.length];
+      const driverId = driverIds[i % driverIds.length];
+      const pickupTime = new Date(Date.now() + (i + 1) * 86400000);
       await client.query(
         'INSERT INTO rides (patient_id, driver_id, pickup_time, pickup_address, dropoff_address, payment_type, status) VALUES ($1, $2, $3, $4, $5, $6, $7)',
         [
           patientId,
           driverId,
           pickupTime,
-          `Patient ${i} Home`,
-          `Clinic ${i}`,
-          i % 2 === 0 ? 'card' : 'insurance',
+          `Patient ${i + 1} Home`,
+          `Clinic ${i + 1}`,
+          (i + 1) % 2 === 0 ? 'card' : 'insurance',
           'pending',
         ]
       );
