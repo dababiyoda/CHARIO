@@ -6,6 +6,11 @@ app.use(express.json());
 
 const pool = new Pool();
 
+// stub to simulate paying out a driver via Stripe
+function payoutDriver(driverId, rideId) {
+  console.log(`Stub payout to driver ${driverId} for ride ${rideId}`);
+}
+
 // POST /rides handler
 app.post('/rides', async (req, res) => {
   try {
@@ -40,6 +45,42 @@ app.post('/rides', async (req, res) => {
     return res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Failed to create ride', err);
+    return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// PUT /rides/:id/complete - mark ride completed and trigger payout
+app.put('/rides/:id/complete', async (req, res) => {
+  const rideId = req.params.id;
+  const { driver_id } = req.body;
+
+  if (!driver_id) {
+    return res.status(400).json({ error: 'driver_id is required' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      'SELECT id FROM rides WHERE id = $1 AND driver_id = $2',
+      [rideId, driver_id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'ride not found for driver' });
+    }
+
+    const updateQuery = `
+      UPDATE rides
+      SET status = 'completed', completed_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
+    const result = await pool.query(updateQuery, [rideId]);
+
+    payoutDriver(driver_id, rideId);
+
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Failed to complete ride', err);
     return res.status(500).json({ error: 'internal server error' });
   }
 });
