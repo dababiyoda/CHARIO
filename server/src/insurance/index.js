@@ -1,10 +1,9 @@
 const AWS = require('aws-sdk');
-const { Pool } = require('pg');
+const { prisma } = require('../db');
 const { Readable } = require('stream');
 
 const { config } = require('../../../src/config/env');
 const s3 = new AWS.S3();
-const pool = new Pool();
 
 /**
  * Streams a file to S3 and stores metadata in insurance_docs.
@@ -32,11 +31,9 @@ async function uploadInsurance(fileBuffer, fileName, rideId) {
     Expires: 60 * 60
   });
 
-  const insert = `
-    INSERT INTO insurance_docs (ride_id, s3_key, uploaded_at)
-    VALUES ($1, $2, NOW())
-  `;
-  await pool.query(insert, [rideId, fileName]);
+  await prisma.insuranceDoc.create({
+    data: { ride_id: rideId, s3_key: fileName }
+  });
 
   return url;
 }

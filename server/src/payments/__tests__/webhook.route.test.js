@@ -1,4 +1,4 @@
-jest.mock('pg');
+jest.mock('@prisma/client');
 
 const express = require('express');
 const request = require('supertest');
@@ -11,7 +11,7 @@ process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 const createWebhookRouter = require('../webhook');
-const { __rides } = require('pg');
+const { __rides } = require('@prisma/client');
 
 describe('stripe webhook router', () => {
   let app;

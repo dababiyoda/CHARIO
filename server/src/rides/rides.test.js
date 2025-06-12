@@ -1,4 +1,4 @@
-jest.mock('pg');
+jest.mock('@prisma/client');
 
 const request = require('supertest');
 process.env.DATABASE_URL = 'postgres://test';
@@ -7,8 +7,8 @@ process.env.STRIPE_KEY = 'sk';
 process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
-const { app, pool } = require('../app');
-const { __rides } = require('pg');
+const { app, prisma } = require('../app');
+const { __rides } = require('@prisma/client');
 
 describe('/rides booking endpoint', () => {
   beforeEach(() => {
@@ -43,8 +43,7 @@ describe('/rides booking endpoint', () => {
 
   test('DB row count increases on success', async () => {
     const future = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
-    const { rows: beforeRows } = await pool.query('SELECT COUNT(*) FROM rides');
-    const before = parseInt(beforeRows[0].count, 10);
+    const before = (await prisma.ride.findMany()).length;
 
     await request(app)
       .post('/rides')
@@ -55,8 +54,7 @@ describe('/rides booking endpoint', () => {
         payment_type: 'card'
       });
 
-    const { rows: afterRows } = await pool.query('SELECT COUNT(*) FROM rides');
-    const after = parseInt(afterRows[0].count, 10);
+    const after = (await prisma.ride.findMany()).length;
 
     expect(after).toBe(before + 1);
   });
@@ -71,7 +69,7 @@ describe('/rides booking endpoint', () => {
 
   test('database errors return 500', async () => {
     const future = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
-    jest.spyOn(pool, 'query').mockRejectedValueOnce(new Error('db fail'));
+    jest.spyOn(prisma.ride, 'create').mockRejectedValueOnce(new Error('db fail'));
     const res = await request(app)
       .post('/rides')
       .send({

@@ -1,9 +1,8 @@
 const express = require('express');
-const { Pool } = require('pg');
+const { prisma } = require('../db');
 const { config } = require('../../../src/config/env');
 const stripe = require('stripe')(config.STRIPE_KEY || '');
 
-const pool = new Pool();
 
 function createWebhookRouter(io) {
   const router = express.Router();
@@ -22,12 +21,12 @@ function createWebhookRouter(io) {
 
         if (event.type === 'payment_intent.succeeded') {
           const intent = event.data.object;
-          const { rows } = await pool.query(
-            `UPDATE rides SET status = 'confirmed' WHERE stripe_payment_id = $1 RETURNING *`,
-            [intent.id]
-          );
-          if (rows[0] && io) {
-            io.to('drivers').emit('payment_confirmed', rows[0]);
+          const ride = await prisma.ride.update({
+            where: { stripe_payment_id: intent.id },
+            data: { status: 'confirmed' }
+          });
+          if (ride && io) {
+            io.to('drivers').emit('payment_confirmed', ride);
           }
         }
 

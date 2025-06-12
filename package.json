@@ -32,7 +32,8 @@
     "socket.io": "^4.7.2",
     "stripe": "^12.0.0",
     "twilio": "^4.16.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@prisma/client": "^6.9.0"
   },
   "overrides": {
     "debug": "^4.4.1"
@@ -41,6 +42,7 @@
     "eslint": "^9.28.0",
     "jest": "^29.6.1",
     "make-coverage-badge": "^1.2.0",
-    "supertest": "^6.3.3"
+    "supertest": "^6.3.3",
+    "prisma": "^6.9.0"
   }
 }

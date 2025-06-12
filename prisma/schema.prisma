@@ -1,0 +1,69 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ride_status {
+  pending
+  confirmed
+  completed
+}
+
+model Patient {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  phone      String
+  rides      Ride[]   @relation("patientRides")
+  created_at DateTime @default(now()) @db.Timestamptz
+}
+
+model Driver {
+  id         String   @id @default(uuid()) @db.Uuid
+  name       String
+  phone      String
+  rides      Ride[]   @relation("driverRides")
+  created_at DateTime @default(now()) @db.Timestamptz
+}
+
+model Payment {
+  id         String   @id @default(uuid()) @db.Uuid
+  amount     Decimal  @db.Decimal(10,2)
+  created_at DateTime @default(now()) @db.Timestamptz
+}
+
+model Ride {
+  id             String      @id @default(uuid()) @db.Uuid
+  patient        Patient?    @relation("patientRides", fields: [patient_id], references: [id])
+  patient_id     String?     @db.Uuid
+  driver         Driver?     @relation("driverRides", fields: [driver_id], references: [id])
+  driver_id      String?     @db.Uuid
+  pickup_time    DateTime    @db.Timestamptz
+  pickup_address String
+  dropoff_address String
+  payment_type   String
+  status         ride_status @default(pending) @db.Enum("ride_status")
+  insurance_id   String?     @db.Uuid
+  stripe_payment_id String?  @db.Text
+  completed_at   DateTime?   @db.Timestamptz
+  created_at     DateTime    @default(now()) @db.Timestamptz
+  insurance_docs InsuranceDoc[]
+}
+
+model InsuranceDoc {
+  id          String   @id @default(uuid()) @db.Uuid
+  ride        Ride     @relation(fields: [ride_id], references: [id])
+  ride_id     String   @db.Uuid
+  s3_key      String
+  uploaded_at DateTime @default(now()) @db.Timestamptz
+}
+
+model AuditLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  user_id    String?  @db.Uuid
+  action     String
+  created_at DateTime @default(now()) @db.Timestamptz
+}

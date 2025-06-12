@@ -1,11 +1,10 @@
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
-const { Pool } = require('pg');
+const { prisma } = require('./db');
 const pinoHttp = require('pino-http');
 const { randomUUID, createHash } = require('crypto');
 const { observeRequest, metricsEndpoint } = require('./metrics');
-let pool;
 const { config } = require('../../src/config/env');
 const { payoutDriver } = require('./payments/payouts');
 const createWebhookRouter = require('./payments/webhook');
@@ -66,7 +65,6 @@ io.on('connection', (socket) => {
   });
 });
 
-pool = new Pool();
 app.use(createWebhookRouter(io));
 app.use(express.json());
 
@@ -124,18 +122,20 @@ app.post('/rides', validate(bookRideSchema), async (req, res) => {
 
     const pickupTime = new Date(pickup_time);
 
-    const insertQuery = `
-      INSERT INTO rides (pickup_time, pickup_address, dropoff_address, payment_type, status)
-      VALUES ($1, $2, $3, $4, 'pending')
-      RETURNING *
-    `;
-
-    const { rows } = await pool.query(insertQuery, [pickupTime.toISOString(), pickup_address, dropoff_address, payment_type]);
-    if (rows[0] && rows[0].status === 'pending') {
-      io.to('drivers').emit('new_ride', rows[0]);
+    const ride = await prisma.ride.create({
+      data: {
+        pickup_time: pickupTime,
+        pickup_address,
+        dropoff_address,
+        payment_type,
+        status: 'pending'
+      }
+    });
+    if (ride.status === 'pending') {
+      io.to('drivers').emit('new_ride', ride);
     }
     await logAudit(req.user ? req.user.id : null, 'POST /rides');
-    return res.status(201).json(rows[0]);
+    return res.status(201).json(ride);
   } catch (err) {
     console.error('Failed to create ride', err);
     return res.status(500).json({ error: 'internal server error' });
@@ -178,11 +178,16 @@ app.get('/rides', authenticate, validate(ridesQuerySchema), async (req, res) => 
       values.push(id);
     }
 
-    const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
-    const query = `SELECT * FROM rides${where} ORDER BY pickup_time`;
-    const { rows } = await pool.query(query, values);
+    const whereClause = {};
+    if (status) whereClause.status = status;
+    if (driver_id) whereClause.driver_id = driver_id === 'me' ? req.user.id : driver_id;
+    if (patient_id) whereClause.patient_id = patient_id === 'me' ? req.user.id : patient_id;
+    const rides = await prisma.ride.findMany({
+      where: whereClause,
+      orderBy: { pickup_time: 'asc' }
+    });
     await logAudit(req.user.id, 'GET /rides');
-    return res.json(rows);
+    return res.json(rides);
   } catch (err) {
     console.error('Failed to fetch rides', err);
     return res.status(500).json({ error: 'internal server error' });
@@ -199,19 +204,22 @@ app.put(
     try {
       const id = req.validated.params.id;
 
-    // fetch ride to check if already assigned
-    const { rows } = await pool.query('SELECT driver_id FROM rides WHERE id = $1', [id]);
-    if (rows.length === 0) {
+    const rideCheck = await prisma.ride.findUnique({
+      where: { id },
+      select: { driver_id: true }
+    });
+    if (!rideCheck) {
       return res.status(404).json({ error: 'ride not found' });
     }
-    if (rows[0].driver_id) {
+    if (rideCheck.driver_id) {
       return res.status(409).json({ error: 'ride already assigned' });
     }
-
-    const updateQuery = `UPDATE rides SET driver_id = $1, status = 'confirmed' WHERE id = $2 RETURNING *`;
-    const { rows: updated } = await pool.query(updateQuery, [req.user.id, id]);
+    const updated = await prisma.ride.update({
+      where: { id },
+      data: { driver_id: req.user.id, status: 'confirmed' }
+    });
     await logAudit(req.user.id, `PUT /rides/${id}/assign`);
-    return res.json(updated[0]);
+    return res.json(updated);
   } catch (err) {
     console.error('Failed to assign ride', err);
     return res.status(500).json({ error: 'internal server error' });
@@ -228,15 +236,13 @@ app.put(
     try {
       const id = req.validated.params.id;
 
-    const { rows } = await pool.query(
-      'SELECT driver_id, status FROM rides WHERE id = $1',
-      [id]
-    );
-    if (rows.length === 0) {
+    const ride = await prisma.ride.findUnique({
+      where: { id },
+      select: { driver_id: true, status: true }
+    });
+    if (!ride) {
       return res.status(404).json({ error: 'ride not found' });
     }
-
-    const ride = rows[0];
 
     if (ride.driver_id !== req.user.id) {
       return res.status(403).json({ error: 'only assigned driver can complete ride' });
@@ -246,19 +252,15 @@ app.put(
       return res.status(409).json({ error: 'ride already completed' });
     }
 
-    const updateQuery = `
-      UPDATE rides
-      SET status = 'completed', completed_at = NOW()
-      WHERE id = $1
-      RETURNING *
-    `;
-
-    const { rows: updated } = await pool.query(updateQuery, [id]);
+    const updated = await prisma.ride.update({
+      where: { id },
+      data: { status: 'completed', completed_at: new Date() }
+    });
 
     payoutDriver(req.user.id, id);
     await logAudit(req.user.id, `PUT /rides/${id}/complete`);
 
-    return res.json(updated[0]);
+    return res.json(updated);
   } catch (err) {
     console.error('Failed to complete ride', err);
     return res.status(500).json({ error: 'internal server error' });
@@ -271,20 +273,21 @@ function scheduleReminders() {
     const now = new Date();
     const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const in25h = new Date(now.getTime() + 25 * 60 * 60 * 1000);
-    const query = `
-    SELECT r.pickup_time, p.phone AS patient_phone, d.phone AS driver_phone
-    FROM rides r
-    JOIN patients p ON r.patient_id = p.id
-    JOIN drivers d ON r.driver_id = d.id
-    WHERE r.status = 'confirmed'
-      AND r.pickup_time >= $1 AND r.pickup_time < $2
-  `;
     try {
-      const { rows } = await pool.query(query, [in24h.toISOString(), in25h.toISOString()]);
-      for (const ride of rows) {
+      const rides = await prisma.ride.findMany({
+        where: {
+          status: 'confirmed',
+          pickup_time: { gte: in24h, lt: in25h }
+        },
+        include: {
+          patient: { select: { phone: true } },
+          driver: { select: { phone: true } }
+        }
+      });
+      for (const ride of rides) {
         const timeStr = new Date(ride.pickup_time).toLocaleString();
-        await sendSMS(ride.patient_phone, `Reminder: your ride is scheduled for ${timeStr}.`);
-        await sendSMS(ride.driver_phone, `Reminder: you have a ride scheduled for ${timeStr}.`);
+        await sendSMS(ride.patient.phone, `Reminder: your ride is scheduled for ${timeStr}.`);
+        await sendSMS(ride.driver.phone, `Reminder: you have a ride scheduled for ${timeStr}.`);
       }
     } catch (err) {
       console.error('Failed to send ride reminders', err);
@@ -292,4 +295,4 @@ function scheduleReminders() {
   });
 }
 
-module.exports = { app, server, pool, io, scheduleReminders };
+module.exports = { app, server, prisma, io, scheduleReminders };

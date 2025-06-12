@@ -1,5 +1,5 @@
 const request = require('supertest');
-jest.mock('pg');
+jest.mock('@prisma/client');
 
 process.env.DATABASE_URL = 'postgres://test';
 process.env.JWT_SECRET = 'secret';
@@ -10,7 +10,7 @@ process.env.S3_BUCKET = 'bucket';
 
 const { app } = require('../../app');
 const { issueToken } = require('../../auth');
-const { __rides } = require('pg');
+const { __rides } = require('@prisma/client');
 
 const driverId = 'driver123';
 const rideId = '123e4567-e89b-42d3-a456-426614174000';

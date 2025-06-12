@@ -17,7 +17,7 @@ describe('uploadInsurance', () => {
     process.env.TWILIO_SID = 'sid';
     process.env.TWILIO_TOKEN = 'token';
     process.env.S3_BUCKET = 'bucket';
-    ({ __insuranceDocs } = require('pg'));
+    ({ __insuranceDocs } = require('@prisma/client'));
     uploadInsurance = require('../index');
     __insuranceDocs.length = 0;
   });
@@ -26,7 +26,7 @@ test('uploads file to s3 and records doc', async () => {
     const url = await uploadInsurance(Buffer.from('buf'), 'f.txt', 1);
     expect(url).toBe('http://signed-url');
     expect(__insuranceDocs.length).toBe(1);
-    expect(__insuranceDocs[0]).toEqual({ ride_id: 1, s3_key: 'f.txt' });
+    expect(__insuranceDocs[0]).toMatchObject({ ride_id: 1, s3_key: 'f.txt' });
   });
 
 test('missing S3_BUCKET throws error', () => {

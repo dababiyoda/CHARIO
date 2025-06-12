@@ -1,4 +1,4 @@
-jest.mock('pg');
+jest.mock('@prisma/client');
 
 const request = require('supertest');
 const stripe = require('stripe')('sk_test');
@@ -10,7 +10,7 @@ process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 const { app, io } = require('../../app');
-const { __rides } = require('pg');
+const { __rides } = require('@prisma/client');
 
 describe('stripe webhook', () => {
   beforeEach(() => {
