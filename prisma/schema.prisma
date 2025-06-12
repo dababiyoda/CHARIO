@@ -62,8 +62,10 @@ model InsuranceDoc {
 }
 
 model AuditLog {
-  id         String   @id @default(uuid()) @db.Uuid
-  user_id    String?  @db.Uuid
-  action     String
-  created_at DateTime @default(now()) @db.Timestamptz
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String?  @db.Uuid
+  method    String
+  path      String
+  bodyHash  String
+  createdAt DateTime @default(now()) @db.Timestamptz
 }
