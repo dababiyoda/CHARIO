@@ -2,6 +2,13 @@ jest.mock('stripe', () => jest.fn(() => ({
   paymentIntents: { create: jest.fn().mockResolvedValue({ id: 'pi_1' }) }
 })));
 
+process.env.DATABASE_URL = 'postgres://test';
+process.env.JWT_SECRET = 'secret';
+process.env.STRIPE_KEY = 'sk';
+process.env.TWILIO_SID = 'sid';
+process.env.TWILIO_TOKEN = 'token';
+process.env.S3_BUCKET = 'bucket';
+
 const { Pool, __rides } = require('pg');
 const { chargeCard } = require('../index');
 

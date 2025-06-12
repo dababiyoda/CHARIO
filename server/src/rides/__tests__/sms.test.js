@@ -5,9 +5,13 @@ jest.mock('twilio', () => jest.fn(() => ({
 describe('sendSMS', () => {
   beforeEach(() => {
     jest.resetModules();
-    process.env.TWILIO_ACCOUNT_SID = 'sid';
-    process.env.TWILIO_AUTH_TOKEN = 'token';
+    process.env.DATABASE_URL = 'postgres://test';
+    process.env.JWT_SECRET = 'secret';
+    process.env.STRIPE_KEY = 'sk';
+    process.env.TWILIO_SID = 'sid';
+    process.env.TWILIO_TOKEN = 'token';
     process.env.TWILIO_FROM_PHONE = '+1';
+    process.env.S3_BUCKET = 'bucket';
   });
 
   test('sends sms via twilio', async () => {

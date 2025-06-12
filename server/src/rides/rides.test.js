@@ -1,6 +1,12 @@
 jest.mock('pg');
 
 const request = require('supertest');
+process.env.DATABASE_URL = 'postgres://test';
+process.env.JWT_SECRET = 'secret';
+process.env.STRIPE_KEY = 'sk';
+process.env.TWILIO_SID = 'sid';
+process.env.TWILIO_TOKEN = 'token';
+process.env.S3_BUCKET = 'bucket';
 const { app, pool } = require('../app');
 const { __rides } = require('pg');
 
