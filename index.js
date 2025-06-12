@@ -185,11 +185,12 @@ app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => 
 });
 
 // Cron job: send reminders for rides happening in 24 hours
-cron.schedule('0 * * * *', async () => {
-  const now = new Date();
-  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  const in25h = new Date(now.getTime() + 25 * 60 * 60 * 1000);
-  const query = `
+function scheduleReminders() {
+  cron.schedule('0 * * * *', async () => {
+    const now = new Date();
+    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const in25h = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+    const query = `
     SELECT r.pickup_time, p.phone AS patient_phone, d.phone AS driver_phone
     FROM rides r
     JOIN patients p ON r.patient_id = p.id
@@ -197,17 +198,24 @@ cron.schedule('0 * * * *', async () => {
     WHERE r.status = 'confirmed'
       AND r.pickup_time >= $1 AND r.pickup_time < $2
   `;
-  try {
-    const { rows } = await pool.query(query, [in24h.toISOString(), in25h.toISOString()]);
-    for (const ride of rows) {
-      const timeStr = new Date(ride.pickup_time).toLocaleString();
-      await sendSMS(ride.patient_phone, `Reminder: your ride is scheduled for ${timeStr}.`);
-      await sendSMS(ride.driver_phone, `Reminder: you have a ride scheduled for ${timeStr}.`);
+    try {
+      const { rows } = await pool.query(query, [in24h.toISOString(), in25h.toISOString()]);
+      for (const ride of rows) {
+        const timeStr = new Date(ride.pickup_time).toLocaleString();
+        await sendSMS(ride.patient_phone, `Reminder: your ride is scheduled for ${timeStr}.`);
+        await sendSMS(ride.driver_phone, `Reminder: you have a ride scheduled for ${timeStr}.`);
+      }
+    } catch (err) {
+      console.error('Failed to send ride reminders', err);
     }
-  } catch (err) {
-    console.error('Failed to send ride reminders', err);
-  }
-});
+  });
+}
 
 const port = process.env.PORT || 3000;
-server.listen(port, () => console.log(`Server running on port ${port}`));
+
+if (require.main === module) {
+  scheduleReminders();
+  server.listen(port, () => console.log(`Server running on port ${port}`));
+}
+
+module.exports = { app, server, pool };
