@@ -1,63 +1,58 @@
 # CHARIO
 
-medical rides, simplified. Uber-style app for non-emergency transport: patients schedule trips a week ahead, insurance is auto-verified or card-paid, drivers get guaranteed pickups, and everyone tracks status in real time. Affordable, transparent, and built for healthcare logistics.
+CHARIO is a simplified ride scheduling system for non-emergency medical transport. Patients can request rides in advance, drivers claim available trips and everyone receives real‑time updates.
 
-## Real-time driver updates
+## One-command local bootstrap
 
-A Socket.IO server runs alongside the Express API. When a ride is created with a `pending` status, the server emits a `new_ride` event to the `drivers` room. A driver client can join this room and prepend a card in the UI for the new ride.
-
-Example client usage:
-
-```html
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  const socket = io();
-  socket.emit('join_drivers');
-  socket.on('new_ride', ride => {
-    const list = document.getElementById('rides');
-    if (list) {
-      const card = document.createElement('div');
-      card.textContent = `${ride.pickup_address} → ${ride.dropoff_address}`;
-      list.prepend(card);
-    }
-  });
-</script>
-```
-
-## Local setup
-
-1. Install Node.js 18 and PostgreSQL.
-2. Copy `schema.sql` into your database and create the tables.
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Set the following environment variables:
-   - `DATABASE_URL` – connection string for Postgres
-   - `JWT_SECRET` – token signing secret
-   - `STRIPE_SECRET_KEY` – Stripe API key
-   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_PHONE` – for SMS
-   - `S3_BUCKET` – bucket for insurance uploads
-5. Start the server:
-   ```bash
-   npm start
-   ```
-
-## Running tests
-
-The project uses Jest and Supertest for API tests. After installing dependencies, run:
-
-```bash
-npm test
-```
-
-## Docker
-
-A `docker-compose.yml` is provided for local development with Postgres, Redis and MinIO. Run:
+The fastest way to start all services is with Docker:
 
 ```bash
 docker compose up
 ```
 
-The `Dockerfile` builds a production image of the API.
+This boots Postgres, Redis, MinIO and the API server with sample configuration.
 
+## Environment variables
+
+| Variable | Description |
+| --- | --- |
+| `DATABASE_URL` | Postgres connection string |
+| `JWT_SECRET` | Token signing secret |
+| `STRIPE_SECRET_KEY` | Stripe API key |
+| `TWILIO_ACCOUNT_SID` | Twilio account SID |
+| `TWILIO_AUTH_TOKEN` | Twilio auth token |
+| `TWILIO_FROM_PHONE` | Phone number used to send SMS |
+| `S3_BUCKET` | Bucket for insurance uploads |
+| `S3_ENDPOINT` | S3 endpoint (for MinIO in dev) |
+| `S3_ACCESS_KEY` | Access key for S3/MinIO |
+| `S3_SECRET_KEY` | Secret key for S3/MinIO |
+| `PORT` | API HTTP port |
+
+## API endpoints
+
+| Method & Path | Description |
+| --- | --- |
+| `POST /rides` | Create a ride request |
+| `GET /rides` | List rides (filter by status, driver or patient) |
+| `PUT /rides/:id/assign` | Assign the authenticated driver to a ride |
+| `PUT /rides/:id/complete` | Mark a ride complete and trigger payout |
+
+Real‑time updates are delivered through Socket.IO. Drivers join the `drivers` room and receive `new_ride` events whenever a patient books a trip.
+
+## Slack and Twilio webhook setup
+
+Twilio is used for SMS notifications. Create a Twilio account, note your `ACCOUNT_SID`, `AUTH_TOKEN` and a verified sending number, then set the environment variables shown above.
+
+For Slack notifications you can create an [Incoming Webhook](https://api.slack.com/messaging/webhooks) URL and expose it as `SLACK_WEBHOOK_URL`. Integrations can post ride events to a Slack channel by sending JSON payloads to this URL.
+
+## Running tests
+
+Install dependencies and run:
+
+```bash
+npm test
+```
+
+## Docker image
+
+A `Dockerfile` builds a production image of the API. Use `docker compose up` for local development.
