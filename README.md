@@ -24,6 +24,24 @@ Run the entire stack with Docker Compose:
 docker compose up
 ```
 
+## Local setup
+
+For environments where Docker Compose isn't available, you can run the API with a
+local Postgres instance:
+
+1. Install Postgres:
+   ```bash
+   brew install postgres
+   ```
+2. Start Postgres locally:
+   ```bash
+   ./scripts/local-postgres.sh
+   ```
+3. Launch the server pointing `DATABASE_URL` at the new database:
+   ```bash
+   DATABASE_URL=postgresql://localhost:5433/chario_local npm run dev
+   ```
+
 ## API reference
 
 | Method | Path | Auth | Description |
