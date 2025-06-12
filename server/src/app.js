@@ -28,6 +28,9 @@ app.use(helmet());
 app.use(limiter);
 app.use(express.static('public'));
 
+// Simple health endpoint for containers
+app.get('/healthz', (req, res) => res.send('ok'));
+
 const rideSchema = Joi.object({
   pickup_time: Joi.string().isoDate().required(),
   pickup_address: Joi.string().required(),
