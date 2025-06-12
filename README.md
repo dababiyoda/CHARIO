@@ -28,6 +28,9 @@ This boots Postgres, Redis, MinIO and the API server with sample configuration.
 | `S3_SECRET_KEY` | Secret key for S3/MinIO |
 | `PORT` | API HTTP port |
 
+A `.env.sample` file in the repository lists these variables with placeholder
+values. Copy it to `.env` and update the credentials for local development.
+
 ## API endpoints
 
 | Method & Path | Description |
