@@ -27,6 +27,15 @@ class Pool {
         return Promise.resolve({ rows: [ride] });
       }
     }
+    if (sql.startsWith('UPDATE rides') && sql.includes("SET status = 'completed'")) {
+      const id = params[0];
+      const ride = rides.find(r => r.id === id);
+      if (ride) {
+        ride.status = 'completed';
+        ride.completed_at = new Date().toISOString();
+        return Promise.resolve({ rows: [ride] });
+      }
+    }
     if (sql.startsWith('UPDATE rides')) {
       const id = params[1];
       const ride = rides.find(r => r.id === id);
@@ -38,6 +47,11 @@ class Pool {
     }
     if (sql.startsWith('SELECT COUNT(*) FROM rides')) {
       return Promise.resolve({ rows: [{ count: String(rides.length) }] });
+    }
+    if (sql.startsWith('SELECT driver_id, status FROM rides WHERE id = $1')) {
+      const ride = rides.find(r => r.id === params[0]);
+      if (!ride) return Promise.resolve({ rows: [] });
+      return Promise.resolve({ rows: [{ driver_id: ride.driver_id, status: ride.status }] });
     }
     return Promise.resolve({ rows: [] });
   }
