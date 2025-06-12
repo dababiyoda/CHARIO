@@ -29,6 +29,7 @@ const env = {
   NODE_ENV: process.env.NODE_ENV,
   METRICS_USER: process.env.METRICS_USER,
   METRICS_PASS: process.env.METRICS_PASS,
+  COMMIT_SHA: process.env.COMMIT_SHA,
 };
 
 const schema = z.object({

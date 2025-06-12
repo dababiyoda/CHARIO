@@ -54,7 +54,7 @@ app.use(observeRequest);
 
 app.use(helmet());
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
-app.use(express.static('public'));
+app.use('/static', express.static('public', { maxAge: '30d', etag: true }));
 
 // Simple health endpoint for containers
 app.get('/healthz', (req, res) => res.send('ok'));
