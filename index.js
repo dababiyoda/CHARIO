@@ -1,5 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
+const cron = require('node-cron');
+const sendSMS = require('./sms');
 
 const app = express();
 app.use(express.json());
@@ -46,3 +48,27 @@ app.post('/rides', async (req, res) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Server running on port ${port}`));
+
+// send reminders hourly for rides occurring in 24 hours
+cron.schedule('0 * * * *', async () => {
+  const now = new Date();
+  const start = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const query = `
+    SELECT rides.pickup_time, patients.phone AS patient_phone, drivers.phone AS driver_phone
+    FROM rides
+    JOIN patients ON rides.patient_id = patients.id
+    JOIN drivers ON rides.driver_id = drivers.id
+    WHERE rides.pickup_time >= $1 AND rides.pickup_time < $2
+  `;
+  try {
+    const { rows } = await pool.query(query, [start.toISOString(), end.toISOString()]);
+    for (const ride of rows) {
+      const time = new Date(ride.pickup_time).toLocaleString();
+      await sendSMS(ride.patient_phone, `Reminder: you have a ride scheduled at ${time}.`);
+      await sendSMS(ride.driver_phone, `Reminder: drive scheduled at ${time}.`);
+    }
+  } catch (err) {
+    console.error('Error sending reminders', err);
+  }
+});
