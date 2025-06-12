@@ -61,3 +61,9 @@ local Postgres instance:
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Security
+
+GitHub Advanced Security is enabled. The CI workflow runs CodeQL analysis and
+TruffleHog secret scanning on every push to prevent vulnerable dependencies and
+leaked credentials.
