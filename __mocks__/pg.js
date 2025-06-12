@@ -20,6 +20,13 @@ class Pool {
       insuranceDocs.push({ ride_id: params[0], s3_key: params[1] });
       return Promise.resolve({ rows: [] });
     }
+    if (sql.startsWith('UPDATE rides SET status')) {
+      const ride = rides.find(r => r.stripe_payment_id === params[0]);
+      if (ride) {
+        ride.status = 'confirmed';
+        return Promise.resolve({ rows: [ride] });
+      }
+    }
     if (sql.startsWith('UPDATE rides')) {
       const id = params[1];
       const ride = rides.find(r => r.id === id);
