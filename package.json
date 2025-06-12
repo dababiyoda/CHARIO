@@ -7,7 +7,7 @@
     "test": "jest",
     "start": "node index.js",
     "lint": "eslint . --ignore-pattern \"coverage/**\"",
-    "test:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov && npx --yes lcov-badge coverage/lcov.info -o coverage.svg",
+    "test:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary && npx --yes make-coverage-badge --report-path coverage/coverage-summary.json --output-path coverage.svg",
     "migrate": "knex migrate:latest",
     "seed": "node seed.js"
   },
@@ -17,23 +17,23 @@
   "type": "commonjs",
   "dependencies": {
     "aws-sdk": "^2.1692.0",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.16.0",
-    "stripe": "^12.0.0",
-    "twilio": "^4.16.0",
-    "node-cron": "^3.0.2",
-    "socket.io": "^4.7.2",
     "dotenv": "^16.4.1",
-    "helmet": "^7.0.0",
+    "express": "^5.1.0",
     "express-rate-limit": "^6.7.0",
+    "helmet": "^7.0.0",
     "joi": "^17.9.2",
-    "knex": "^3.1.0"
+    "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
+    "node-cron": "^3.0.2",
+    "pg": "^8.16.0",
+    "socket.io": "^4.7.2",
+    "stripe": "^12.0.0",
+    "twilio": "^4.16.0"
   },
   "devDependencies": {
-    "jest": "^29.6.1",
-    "supertest": "^6.3.3",
     "eslint": "^9.28.0",
-    "lcov-badge": "^1.0.4"
+    "jest": "^29.6.1",
+    "make-coverage-badge": "^1.2.0",
+    "supertest": "^6.3.3"
   }
 }
