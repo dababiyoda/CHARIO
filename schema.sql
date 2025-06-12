@@ -56,3 +56,12 @@ CREATE TABLE rides (
 -- Indexes for queries on pickup_time and status
 CREATE INDEX idx_rides_pickup_time ON rides(pickup_time);
 CREATE INDEX idx_rides_status ON rides(status);
+
+-- Audit log table for PHI access
+CREATE TABLE audit_logs (
+    id SERIAL PRIMARY KEY,
+    user_id UUID,
+    action TEXT NOT NULL,
+    details TEXT,
+    logged_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

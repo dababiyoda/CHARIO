@@ -10,7 +10,7 @@ const pool = new Pool();
  * @param {Buffer} fileBuffer the file contents
  * @param {string} fileName file name for S3 key
  * @param {string} rideId associated ride id
- * @returns {Promise<string>} public S3 URL
+ * @returns {Promise<string>} pre-signed S3 URL
  */
 async function uploadInsurance(fileBuffer, fileName, rideId) {
   const bucket = process.env.S3_BUCKET;
@@ -21,11 +21,15 @@ async function uploadInsurance(fileBuffer, fileName, rideId) {
     Bucket: bucket,
     Key: fileName,
     Body: stream,
-    ACL: 'public-read'
+    ACL: 'private'
   };
 
-  const data = await s3.upload(params).promise();
-  const url = data.Location;
+  await s3.upload(params).promise();
+  const url = s3.getSignedUrl('getObject', {
+    Bucket: bucket,
+    Key: fileName,
+    Expires: 3600
+  });
 
   const insert = `
     INSERT INTO insurance_docs (ride_id, url, uploaded_at)

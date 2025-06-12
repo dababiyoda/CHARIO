@@ -6,10 +6,23 @@ const { payoutDriver } = require('./payouts');
 const { authenticate } = require('./auth');
 const { sendSMS } = require('./sms');
 const cron = require('node-cron');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const Joi = require('joi');
 
 const app = express();
+app.use(helmet());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 100 }));
 app.use(express.json());
 app.use(express.static('public'));
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
+      return next();
+    }
+    return res.redirect(`https://${req.headers.host}${req.url}`);
+  });
+}
 
 // HTTP and Socket.io server setup
 const server = http.createServer(app);
@@ -23,6 +36,15 @@ io.on('connection', (socket) => {
 
 const pool = new Pool();
 
+async function auditLog(userId, action, details) {
+  const insert = `INSERT INTO audit_logs (user_id, action, details, logged_at) VALUES ($1, $2, $3, NOW())`;
+  try {
+    await pool.query(insert, [userId, action, details]);
+  } catch (err) {
+    console.error('Failed to write audit log', err);
+  }
+}
+
 function requireDriver(req, res, next) {
   if (!req.user) {
     return res.status(401).json({ error: 'unauthenticated' });
@@ -33,24 +55,29 @@ function requireDriver(req, res, next) {
   next();
 }
 
+const rideCreateSchema = Joi.object({
+  pickup_time: Joi.string().isoDate().required(),
+  pickup_address: Joi.string().required(),
+  dropoff_address: Joi.string().required(),
+  payment_type: Joi.string().valid('insurance', 'card').required(),
+});
+
+const rideQuerySchema = Joi.object({
+  status: Joi.string(),
+  driver_id: Joi.string(),
+  patient_id: Joi.string(),
+});
+
 // POST /rides handler
 app.post('/rides', async (req, res) => {
   try {
-    const { pickup_time, pickup_address, dropoff_address, payment_type } = req.body;
-
-    // basic validation
-    if (!pickup_address || !dropoff_address) {
-      return res.status(400).json({ error: 'pickup_address and dropoff_address are required' });
+    const { error, value } = rideCreateSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
     }
 
-    if (!['insurance', 'card'].includes(payment_type)) {
-      return res.status(400).json({ error: 'payment_type must be "insurance" or "card"' });
-    }
-
+    const { pickup_time, pickup_address, dropoff_address, payment_type } = value;
     const pickupTime = new Date(pickup_time);
-    if (isNaN(pickupTime.getTime())) {
-      return res.status(400).json({ error: 'pickup_time must be a valid date' });
-    }
 
     const msInWeek = 7 * 24 * 60 * 60 * 1000;
     if (pickupTime.getTime() - Date.now() < msInWeek) {
@@ -67,6 +94,7 @@ app.post('/rides', async (req, res) => {
     if (rows[0] && rows[0].status === 'pending') {
       io.to('drivers').emit('new_ride', rows[0]);
     }
+    await auditLog(req.user ? req.user.id : null, 'create_ride', rows[0].id);
     return res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Failed to create ride', err);
@@ -77,7 +105,11 @@ app.post('/rides', async (req, res) => {
 // GET /rides handler
 app.get('/rides', authenticate, async (req, res) => {
   try {
-    const { status, driver_id, patient_id } = req.query;
+    const { error, value } = rideQuerySchema.validate(req.query);
+    if (error) {
+      return res.status(400).json({ error: error.details[0].message });
+    }
+    const { status, driver_id, patient_id } = value;
     const clauses = [];
     const values = [];
 
@@ -113,6 +145,7 @@ app.get('/rides', authenticate, async (req, res) => {
     const where = clauses.length ? ` WHERE ${clauses.join(' AND ')}` : '';
     const query = `SELECT * FROM rides${where} ORDER BY pickup_time`;
     const { rows } = await pool.query(query, values);
+    await auditLog(req.user.id, 'list_rides', JSON.stringify(value));
     return res.json(rows);
   } catch (err) {
     console.error('Failed to fetch rides', err);
@@ -123,6 +156,10 @@ app.get('/rides', authenticate, async (req, res) => {
 // PUT /rides/:id/assign handler
 app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
   try {
+    const { error } = Joi.string().required().validate(req.params.id);
+    if (error) {
+      return res.status(400).json({ error: 'invalid id' });
+    }
     const { id } = req.params;
 
     // fetch ride to check if already assigned
@@ -136,6 +173,7 @@ app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
 
     const updateQuery = `UPDATE rides SET driver_id = $1, status = 'confirmed' WHERE id = $2 RETURNING *`;
     const { rows: updated } = await pool.query(updateQuery, [req.user.id, id]);
+    await auditLog(req.user.id, 'assign_ride', id);
     return res.json(updated[0]);
   } catch (err) {
     console.error('Failed to assign ride', err);
@@ -146,6 +184,10 @@ app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
 // PUT /rides/:id/complete handler
 app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => {
   try {
+    const { error } = Joi.string().required().validate(req.params.id);
+    if (error) {
+      return res.status(400).json({ error: 'invalid id' });
+    }
     const { id } = req.params;
 
     const { rows } = await pool.query(
@@ -176,6 +218,7 @@ app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => 
     const { rows: updated } = await pool.query(updateQuery, [id]);
 
     payoutDriver(req.user.id, id);
+    await auditLog(req.user.id, 'complete_ride', id);
 
     return res.json(updated[0]);
   } catch (err) {

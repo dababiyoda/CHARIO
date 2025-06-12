@@ -61,3 +61,11 @@ docker compose up
 
 The `Dockerfile` builds a production image of the API.
 
+## Security notes
+
+- The server enforces HTTPS in production; run behind a TLS-terminating proxy.
+- Insurance documents are uploaded to S3 with private ACLs and returned via pre-signed URLs.
+- Configure your Postgres instance with encryption at rest.
+- All access to PHI is recorded in the `audit_logs` table.
+- Helmet, rate limiting and Joi validation are enabled on all endpoints.
+
