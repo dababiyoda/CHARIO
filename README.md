@@ -38,6 +38,28 @@ before starting the server.
 A `.env.sample` file in the repository lists these variables with placeholder
 values. Copy it to `.env` and update the credentials for local development.
 
+## Insurance Document Upload
+
+Insurance documents such as proof of coverage can be uploaded to S3 using the
+`uploadInsurance` helper. Set `S3_BUCKET` to the target bucket and call the
+function with a file buffer, file name and the associated ride id:
+
+```javascript
+const fs = require('fs');
+const uploadInsurance = require('./server/src/insurance');
+
+const pdfBuffer = fs.readFileSync('insurance.pdf');
+uploadInsurance(pdfBuffer, 'insurance.pdf', rideId)
+  .then(url => {
+    console.log('File available at', url);
+  })
+  .catch(err => {
+    console.error('Upload failed', err);
+  });
+```
+
+Run `npm test` to execute the unit tests for this helper and other modules.
+
 ## API endpoints
 
 | Method & Path | Description |
