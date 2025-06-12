@@ -57,6 +57,9 @@ class PrismaClient {
     this.insuranceDoc = {
       create: async ({ data }) => {
         insuranceDocs.push({ id: String(insuranceDocs.length + 1), ...data });
+      },
+      findUnique: async ({ where }) => {
+        return insuranceDocs.find(d => d.id === where.id) || null;
       }
     };
     this.auditLog = {
