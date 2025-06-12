@@ -176,6 +176,34 @@ app.post('/rides', validate(bookRideSchema), async (req, res) => {
   }
 });
 
+// POST /api/rides handler (alias for backwards compatibility)
+app.post('/api/rides', validate(bookRideSchema), async (req, res) => {
+  try {
+    const { pickup_time, pickup_address, dropoff_address, payment_type } =
+      req.validated.body;
+
+    const pickupTime = new Date(pickup_time);
+
+    const ride = await prisma.ride.create({
+      data: {
+        pickup_time: pickupTime,
+        pickup_address,
+        dropoff_address,
+        payment_type,
+        status: 'pending',
+      },
+    });
+    if (ride.status === 'pending') {
+      io.to('drivers').emit('new_ride', ride);
+    }
+    await logAudit(req.user ? req.user.id : null, 'POST /api/rides');
+    return res.status(201).json(ride);
+  } catch (err) {
+    log.error({ err }, 'Failed to create ride');
+    return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
 // GET /rides handler
 app.get(
   '/rides',

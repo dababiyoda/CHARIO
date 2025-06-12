@@ -1,0 +1,6 @@
+{
+  "pickup_time": "2099-12-31T00:00:00.000Z",
+  "pickup_address": "1 Test Way",
+  "dropoff_address": "2 Example Ave",
+  "payment_type": "card"
+}

@@ -1,0 +1,47 @@
+name: E2E
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: chario
+          POSTGRES_PASSWORD: chario
+          POSTGRES_DB: chario_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U chario" --health-interval=10s --health-timeout=5s --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t chario .
+      - name: Run container
+        run: |
+          docker run -d -p 3000:3000 --env-file .github/env.test --name chario_app chario
+      - name: Wait for health
+        run: |
+          for i in {1..30}; do
+            if curl --fail http://localhost:3000/health >/dev/null 2>&1; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "service failed to start" >&2
+          docker logs chario_app
+          exit 1
+      - name: Issue token
+        id: token
+        run: |
+          TOKEN=$(node -e "const { issueToken } = require('./src/modules/auth/service'); console.log(issueToken({id:'1',role:'patient'}));")
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+      - name: Create ride
+        run: |
+          curl -i -X POST http://localhost:3000/rides -d '@tests/fixtures/ride.json' -H "Content-Type: application/json" -H "Authorization: Bearer ${{ steps.token.outputs.token }}" | tee response.txt
+          grep -q "201" response.txt
