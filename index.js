@@ -1,13 +1,14 @@
 const express = require('express');
 const { Pool } = require('pg');
+const { authMiddleware } = require('./auth');
 
 const app = express();
 app.use(express.json());
 
 const pool = new Pool();
 
-// POST /rides handler
-app.post('/rides', async (req, res) => {
+// POST /rides handler (requires auth)
+app.post('/rides', authMiddleware, async (req, res) => {
   try {
     const { pickup_time, pickup_address, dropoff_address, payment_type } = req.body;
 
