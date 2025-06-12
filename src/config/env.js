@@ -30,6 +30,7 @@ const env = {
   METRICS_USER: process.env.METRICS_USER,
   METRICS_PASS: process.env.METRICS_PASS,
   COMMIT_SHA: process.env.COMMIT_SHA,
+  REDIS_URL: process.env.REDIS_URL,
 };
 
 const schema = z.object({
