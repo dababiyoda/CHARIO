@@ -14,6 +14,7 @@ const cron = require('node-cron');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { logAudit } = require('./audit');
+const audit = require('./middleware/audit');
 const {
   validate,
   bookRideSchema,
@@ -67,6 +68,7 @@ io.on('connection', (socket) => {
 
 app.use(createWebhookRouter(io));
 app.use(express.json());
+app.use(audit);
 
 const users = new Map();
 
