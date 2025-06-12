@@ -47,10 +47,13 @@ CREATE TABLE rides (
     payment_type TEXT NOT NULL,
     status ride_status NOT NULL DEFAULT 'pending',
     insurance_id UUID NULL,
-    stripe_payment_id UUID REFERENCES payments(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    -- use TEXT for Stripe PaymentIntent ids like "pi_..."
+    stripe_payment_id TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at TIMESTAMPTZ NULL
 );
 
 -- Indexes for queries on pickup_time and status
 CREATE INDEX idx_rides_pickup_time ON rides(pickup_time);
 CREATE INDEX idx_rides_status ON rides(status);
+CREATE INDEX idx_rides_completed_at ON rides(completed_at);

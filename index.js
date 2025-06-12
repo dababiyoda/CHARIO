@@ -6,6 +6,25 @@ app.use(express.json());
 
 const pool = new Pool();
 
+// async stub simulating a Stripe payout to a driver
+async function payoutDriver(driverId, rideId) {
+  console.log(`Stub payout to driver ${driverId} for ride ${rideId}`);
+  return Promise.resolve();
+}
+
+function requireDriver(req, res, next) {
+  const userId = req.header('x-user-id');
+  const role = req.header('x-user-role');
+  if (!userId || !role) {
+    return res.status(401).json({ error: 'missing auth headers' });
+  }
+  if (role !== 'driver') {
+    return res.status(403).json({ error: 'driver role required' });
+  }
+  req.user = { id: userId, role };
+  next();
+}
+
 // POST /rides handler
 app.post('/rides', async (req, res) => {
   try {
@@ -40,6 +59,61 @@ app.post('/rides', async (req, res) => {
     return res.status(201).json(rows[0]);
   } catch (err) {
     console.error('Failed to create ride', err);
+    return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// PUT /rides/:id/assign handler
+app.put('/rides/:id/assign', requireDriver, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // fetch ride to check if already assigned
+    const { rows } = await pool.query('SELECT driver_id FROM rides WHERE id = $1', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'ride not found' });
+    }
+    if (rows[0].driver_id) {
+      return res.status(409).json({ error: 'ride already assigned' });
+    }
+
+    const updateQuery = `UPDATE rides SET driver_id = $1, status = 'confirmed' WHERE id = $2 RETURNING *`;
+    const { rows: updated } = await pool.query(updateQuery, [req.user.id, id]);
+    return res.json(updated[0]);
+  } catch (err) {
+    console.error('Failed to assign ride', err);
+    return res.status(500).json({ error: 'internal server error' });
+  }
+});
+
+// PUT /rides/:id/complete - mark ride completed and trigger payout
+app.put('/rides/:id/complete', requireDriver, async (req, res) => {
+  const rideId = req.params.id;
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT id FROM rides
+       WHERE id = $1 AND driver_id = $2 AND status != 'completed'`,
+      [rideId, req.user.id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'ride not found or already completed' });
+    }
+
+    const updateQuery = `
+      UPDATE rides
+      SET status = 'completed', completed_at = NOW()
+      WHERE id = $1
+      RETURNING *
+    `;
+    const result = await pool.query(updateQuery, [rideId]);
+
+    await payoutDriver(req.user.id, rideId);
+
+    return res.json(result.rows[0]);
+  } catch (err) {
+    console.error('Failed to complete ride', err);
     return res.status(500).json({ error: 'internal server error' });
   }
 });
