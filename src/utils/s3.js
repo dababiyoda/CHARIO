@@ -13,12 +13,13 @@ async function putObject(key, body) {
   if (!config.S3_BUCKET) {
     throw new Error('S3_BUCKET env var required');
   }
-  await s3
+  return s3
     .putObject({
       Bucket: config.S3_BUCKET,
       Key: key,
       Body: body,
       ACL: 'private',
+      ServerSideEncryption: 'AES256',
     })
     .promise();
 }
