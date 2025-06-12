@@ -62,3 +62,7 @@ available per module. Prometheus metrics are served from `/metrics` and include
 request latency and failed ride counters. Access to the metrics endpoint is
 protected with basic authentication. The container exposes port `9100` for
 Prometheus scraping.
+
+The repository includes a Grafana dashboard definition at
+`ops/grafana/chario_dashboard.json`. Operations teams should import this file
+using Terraform or the Grafana HTTP API so metrics show up automatically.
