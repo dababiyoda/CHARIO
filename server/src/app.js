@@ -2,6 +2,9 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { Pool } = require('pg');
+const pinoHttp = require('pino-http');
+const { randomUUID } = require('crypto');
+const { observeRequest, metricsEndpoint } = require('./metrics');
 let pool;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '');
 const { payoutDriver } = require('./payments/payouts');
@@ -14,6 +17,9 @@ const Joi = require('joi');
 const { logAudit } = require('./audit');
 
 const app = express();
+const logger = pinoHttp({
+  genReqId: (req) => req.headers['x-correlation-id'] || randomUUID()
+});
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 function requireTLS(req, res, next) {
   if (process.env.NODE_ENV === 'test') {
@@ -25,6 +31,12 @@ function requireTLS(req, res, next) {
   return res.status(426).send('HTTPS required');
 }
 app.use(requireTLS);
+app.use(logger);
+app.use((req, res, next) => {
+  res.setHeader('x-correlation-id', req.id);
+  next();
+});
+app.use(observeRequest);
 
 app.post(
   '/webhook/stripe',
@@ -66,6 +78,7 @@ app.use(express.static('public'));
 
 // Simple health endpoint for containers
 app.get('/healthz', (req, res) => res.send('ok'));
+app.get('/metrics', metricsEndpoint);
 
 const rideSchema = Joi.object({
   pickup_time: Joi.string().isoDate().required(),

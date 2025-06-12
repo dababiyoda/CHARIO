@@ -48,3 +48,9 @@ See [README.md](../README.md) for all required environment variables.
 
 The API uses `helmet` and request rate limiting. TLS termination must be handled by your deployment (e.g., behind a load balancer). Insurance uploads are private and served via pre‑signed URLs. Audit events for PHI access are stored in `audit_logs`.
 
+### Observability
+
+`pino-http` logs each request with a correlation ID in the `X-Correlation-ID`
+header. Prometheus metrics are served from `/metrics` and include request
+latency and failed ride counters.
+
