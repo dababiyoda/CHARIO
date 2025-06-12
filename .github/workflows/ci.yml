@@ -5,55 +5,31 @@ on:
   pull_request:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:13
+        image: postgres:15-alpine
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: chario
+          POSTGRES_PASSWORD: chario
           POSTGRES_DB: chario_test
-        ports:
-          - 5432:5432
+        ports: ["5432:5432"]
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd="pg_isready -U chario"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Test
-        run: npm test
-      - name: Coverage
-        run: npx jest --coverage --coverageReporters=json-summary
-      - name: coverage-gate
-        run: |
-          pct=$(grep -o '"statements"[^}]*' coverage/coverage-summary.json | head -n 1 | grep -o '"pct":[0-9.]*' | grep -o '[0-9.]*')
-          echo "Statements coverage: $pct"
-          if [ "$(printf '%.*f' 0 "$pct")" -lt 80 ]; then
-            echo "Coverage below 80%"
-            exit 1
-          fi
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage
-          path: |
-            coverage
-            coverage.svg
-      - name: Upload to Codecov
-        uses: codecov/codecov-action@v4
-      - name: Deploy to Fly.io
-        if: github.ref == 'refs/heads/main'
-        run: flyctl deploy --remote-only
+          node-version: 20
+      - run: npm ci
+      - run: npx prisma migrate deploy
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          DATABASE_URL: "postgresql://chario:chario@localhost:5432/chario_test"
+      - run: npm run test:coverage
+        env:
+          DATABASE_URL: "postgresql://chario:chario@localhost:5432/chario_test"
+      - run: bash .github/scripts/coverage-gate.sh
