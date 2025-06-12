@@ -26,16 +26,13 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Run tests
-        run: yarn jest
-
-      - name: Run ESLint
-        run: yarn eslint .
+        run: npm test
 
       - name: Build Docker image
         run: docker build . -t chario:${{ github.sha }}

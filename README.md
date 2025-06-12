@@ -1,4 +1,5 @@
 # CHARIO
+
 medical rides, simplified. Uber-style app for non-emergency transport: patients schedule trips a week ahead, insurance is auto-verified or card-paid, drivers get guaranteed pickups, and everyone tracks status in real time. Affordable, transparent, and built for healthcare logistics.
 
 ## Real-time driver updates
@@ -22,3 +23,41 @@ Example client usage:
   });
 </script>
 ```
+
+## Local setup
+
+1. Install Node.js 18 and PostgreSQL.
+2. Copy `schema.sql` into your database and create the tables.
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Set the following environment variables:
+   - `DATABASE_URL` – connection string for Postgres
+   - `JWT_SECRET` – token signing secret
+   - `STRIPE_SECRET_KEY` – Stripe API key
+   - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_PHONE` – for SMS
+   - `S3_BUCKET` – bucket for insurance uploads
+5. Start the server:
+   ```bash
+   npm start
+   ```
+
+## Running tests
+
+The project uses Jest and Supertest for API tests. After installing dependencies, run:
+
+```bash
+npm test
+```
+
+## Docker
+
+A `docker-compose.yml` is provided for local development with Postgres, Redis and MinIO. Run:
+
+```bash
+docker compose up
+```
+
+The `Dockerfile` builds a production image of the API.
+
