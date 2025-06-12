@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Driver Dashboard</title>
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    button {
+      margin-top: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function DriverDashboard() {
+      const [rides, setRides] = useState([]);
+
+      useEffect(() => {
+        fetch('/rides?status=confirmed&driver_id=me')
+          .then(res => res.json())
+          .then(data => setRides(data))
+          .catch(err => console.error('Failed to fetch rides', err));
+      }, []);
+
+      const openNavigation = (address) => {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+        window.open(url, '_blank');
+      };
+
+      return (
+        <div>
+          <h1>Driver Dashboard</h1>
+          {rides.map(ride => (
+            <div key={ride.id} className="card">
+              <div className="card-title">{ride.patient_name}</div>
+              <div>Pickup Time: {new Date(ride.pickup_time).toLocaleString()}</div>
+              <button onClick={() => openNavigation(ride.pickup_address)}>Start Navigation</button>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<DriverDashboard />, document.getElementById('root'));
+  </script>
+</body>
+</html>
