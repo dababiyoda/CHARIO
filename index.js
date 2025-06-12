@@ -123,6 +123,7 @@ app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => 
 });
 
 // Cron job: send reminders for rides happening in 24 hours
+if (process.env.NODE_ENV !== 'test') {
 cron.schedule('0 * * * *', async () => {
   const now = new Date();
   const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
@@ -146,6 +147,11 @@ cron.schedule('0 * * * *', async () => {
     console.error('Failed to send ride reminders', err);
   }
 });
+}
 
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Server running on port ${port}`));
+if (require.main === module) {
+  app.listen(port, () => console.log(`Server running on port ${port}`));
+}
+
+module.exports = { app, pool };
