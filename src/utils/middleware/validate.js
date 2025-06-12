@@ -21,17 +21,17 @@ const bookRideSchema = z.object({
       .refine((v) => !isNaN(Date.parse(v)), 'pickup_time must be ISO')
       .refine(
         (v) => new Date(v).getTime() - Date.now() >= 7 * 24 * 60 * 60 * 1000,
-        'pickup_time must be at least 7 days in the future'
+        'pickup_time must be at least 7 days in the future',
       ),
-    payment_type: z.enum(['insurance', 'card'])
-  })
+    payment_type: z.enum(['insurance', 'card']),
+  }),
 });
 
 const loginSchema = z.object({
   body: z.object({
     email: z.string().email(),
-    password: z.string().min(8)
-  })
+    password: z.string().min(8),
+  }),
 });
 
 const signupSchema = loginSchema; // same fields for this demo
@@ -40,12 +40,12 @@ const ridesQuerySchema = z.object({
   query: z.object({
     status: z.string().optional(),
     driver_id: z.string().optional(),
-    patient_id: z.string().optional()
-  })
+    patient_id: z.string().optional(),
+  }),
 });
 
 const idSchema = z.object({
-  params: z.object({ id: z.string().uuid() })
+  params: z.object({ id: z.string().uuid() }),
 });
 
 module.exports = {
@@ -54,5 +54,5 @@ module.exports = {
   loginSchema,
   signupSchema,
   ridesQuerySchema,
-  idSchema
+  idSchema,
 };

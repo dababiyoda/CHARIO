@@ -39,9 +39,11 @@ This document provides an overview of the repository layout and tips for local d
 ### Seeding the database
 
 Sample data can be inserted by running:
+
 ```bash
 npm run seed
 ```
+
 Make sure the database defined by `DATABASE_URL` is running and accessible.
 
 ## Environment variables
@@ -60,4 +62,3 @@ available per module. Prometheus metrics are served from `/metrics` and include
 request latency and failed ride counters. Access to the metrics endpoint is
 protected with basic authentication. The container exposes port `9100` for
 Prometheus scraping.
-

@@ -19,7 +19,7 @@ async function seed() {
     for (let i = 1; i <= 5; i++) {
       const { rows } = await client.query(
         'INSERT INTO patients (name, phone) VALUES ($1, $2) RETURNING id',
-        [`Patient ${i}`, `555-000${i}`]
+        [`Patient ${i}`, `555-000${i}`],
       );
       patientIds.push(rows[0].id);
     }
@@ -28,7 +28,7 @@ async function seed() {
     for (let i = 1; i <= 3; i++) {
       const { rows } = await client.query(
         'INSERT INTO drivers (name, phone) VALUES ($1, $2) RETURNING id',
-        [`Driver ${i}`, `555-100${i}`]
+        [`Driver ${i}`, `555-100${i}`],
       );
       driverIds.push(rows[0].id);
     }
@@ -48,7 +48,7 @@ async function seed() {
           `Clinic ${i + 1}`,
           (i + 1) % 2 === 0 ? 'card' : 'insurance',
           'pending',
-        ]
+        ],
       );
     }
 

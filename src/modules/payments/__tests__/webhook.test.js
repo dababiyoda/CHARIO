@@ -39,7 +39,10 @@ describe('stripe webhook', () => {
 
     expect(res.status).toBe(200);
     expect(__rides[0].status).toBe('confirmed');
-    expect(emitMock).toHaveBeenCalledWith('payment_confirmed', expect.objectContaining({ id: 1 }));
+    expect(emitMock).toHaveBeenCalledWith(
+      'payment_confirmed',
+      expect.objectContaining({ id: 1 }),
+    );
   });
 
   test('invalid signature returns 400', async () => {

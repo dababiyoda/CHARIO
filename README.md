@@ -45,18 +45,18 @@ local Postgres instance:
 
 ## API reference
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| POST | /signup | none | Create patient account |
-| POST | /login | none | Obtain auth token |
-| POST | /rides | none | Book a ride |
-| GET | /rides | bearer | List rides |
-| PUT | /rides/:id/assign | driver token | Assign driver to ride |
-| PUT | /rides/:id/complete | driver token | Complete ride and pay out |
-| GET | /insurance/:id | bearer | Retrieve insurance document URL |
-| POST | /webhook/stripe | secret | Handle Stripe events |
-| GET | /metrics | basic auth | Prometheus metrics |
-| GET | /health | none | Check database and Stripe |
+| Method | Path                | Auth         | Description                     |
+| ------ | ------------------- | ------------ | ------------------------------- |
+| POST   | /signup             | none         | Create patient account          |
+| POST   | /login              | none         | Obtain auth token               |
+| POST   | /rides              | none         | Book a ride                     |
+| GET    | /rides              | bearer       | List rides                      |
+| PUT    | /rides/:id/assign   | driver token | Assign driver to ride           |
+| PUT    | /rides/:id/complete | driver token | Complete ride and pay out       |
+| GET    | /insurance/:id      | bearer       | Retrieve insurance document URL |
+| POST   | /webhook/stripe     | secret       | Handle Stripe events            |
+| GET    | /metrics            | basic auth   | Prometheus metrics              |
+| GET    | /health             | none         | Check database and Stripe       |
 
 ## Contributing
 

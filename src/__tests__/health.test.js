@@ -1,6 +1,8 @@
-jest.mock('stripe', () => jest.fn(() => ({
-  balance: { retrieve: jest.fn().mockResolvedValue({}) }
-})));
+jest.mock('stripe', () =>
+  jest.fn(() => ({
+    balance: { retrieve: jest.fn().mockResolvedValue({}) },
+  })),
+);
 
 const request = require('supertest');
 

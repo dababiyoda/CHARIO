@@ -63,10 +63,16 @@
     "dotenv-safe": "^9.1.0"
   },
   "jest": {
-    "setupFiles": ["<rootDir>/tests/jest.setup.js"],
-    "coveragePathIgnorePatterns": ["<rootDir>/src/app.js"],
+    "setupFiles": [
+      "<rootDir>/tests/jest.setup.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "<rootDir>/src/app.js"
+    ],
     "coverageThreshold": {
-      "global": { "lines": 80 }
+      "global": {
+        "lines": 80
+      }
     }
   },
   "lint-staged": {
