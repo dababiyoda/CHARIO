@@ -32,6 +32,7 @@ The PostgreSQL schema is defined in `schema.sql` and contains the following tabl
 - `rides` – trip requests linking patients and drivers
 - `payments` – Stripe payment intents
 - `insurance_docs` – uploaded insurance forms
+- `audit_logs` – records of PHI access
 
 Key indexes exist on `rides.pickup_time` and `rides.status`.
 

@@ -21,7 +21,10 @@
     "twilio": "^4.16.0",
     "node-cron": "^3.0.2",
     "socket.io": "^4.7.2",
-    "dotenv": "^16.4.1"
+    "dotenv": "^16.4.1",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.7.0",
+    "joi": "^17.9.2"
   },
   "devDependencies": {
     "jest": "^29.6.1",

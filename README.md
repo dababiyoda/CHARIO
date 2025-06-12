@@ -60,6 +60,13 @@ npm test
 
 A `Dockerfile` builds a production image of the API. Use `docker compose up` for local development.
 
+## Security notes
+
+- The API enforces HTTPS; ensure TLS termination in production.
+- Insurance documents are uploaded privately to S3 and accessed via pre-signed URLs.
+- Access to PHI is audited in the `audit_logs` table.
+- `helmet` and request rate limiting are enabled by default.
+
 ## Developer documentation
 
 Additional details on repository structure and local development can be found in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).

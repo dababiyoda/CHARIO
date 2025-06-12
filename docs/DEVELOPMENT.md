@@ -44,3 +44,7 @@ Make sure the database defined by `DATABASE_URL` is running and accessible.
 
 See [README.md](../README.md) for all required environment variables.
 
+### Security
+
+The API uses `helmet` and request rate limiting. TLS termination must be handled by your deployment (e.g., behind a load balancer). Insurance uploads are private and served via pre‑signed URLs. Audit events for PHI access are stored in `audit_logs`.
+
