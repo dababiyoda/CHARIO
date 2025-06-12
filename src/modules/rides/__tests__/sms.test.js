@@ -16,7 +16,7 @@ describe('sendSMS', () => {
 
   test('sends sms via twilio', async () => {
     const twilio = require('twilio');
-    const { sendSMS } = require('../sms');
+    const { sendSMS } = require('../service');
     await sendSMS('+2', 'hi');
     expect(twilio).toHaveBeenCalledWith('sid', 'token');
     const client = twilio.mock.results[0].value;

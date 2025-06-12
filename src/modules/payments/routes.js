@@ -1,6 +1,6 @@
 const express = require('express');
-const { prisma } = require('../db');
-const { config } = require('../../../src/config/env');
+const { prisma } = require('../../utils/db');
+const { config } = require('../../config/env');
 const stripe = require('stripe')(config.STRIPE_KEY || '');
 
 

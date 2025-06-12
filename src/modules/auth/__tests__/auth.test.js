@@ -4,7 +4,7 @@ process.env.STRIPE_KEY = 'sk';
 process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
-const { authenticate, issueToken } = require('../index');
+const { authenticate, issueToken } = require('../service');
 
 describe('auth module', () => {
   test('issueToken and authenticate success', () => {

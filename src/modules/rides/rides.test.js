@@ -7,7 +7,7 @@ process.env.STRIPE_KEY = 'sk';
 process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
-const { app, prisma } = require('../app');
+const { app, prisma } = require('../../app');
 const { __rides } = require('@prisma/client');
 
 describe('/rides booking endpoint', () => {

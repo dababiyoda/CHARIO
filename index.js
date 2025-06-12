@@ -1,5 +1,5 @@
 const { config } = require('./src/config/env');
-const { server, scheduleReminders } = require('./server/src/app');
+const { server, scheduleReminders } = require('./src/app');
 
 const port = config.PORT || 3000;
 

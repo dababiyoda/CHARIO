@@ -1,8 +1,8 @@
 const AWS = require('aws-sdk');
-const { prisma } = require('../db');
+const { prisma } = require('../../utils/db');
 const { Readable } = require('stream');
 
-const { config } = require('../../../src/config/env');
+const { config } = require('../../config/env');
 const s3 = new AWS.S3();
 
 /**

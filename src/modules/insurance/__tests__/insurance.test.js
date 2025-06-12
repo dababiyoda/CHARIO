@@ -18,7 +18,7 @@ describe('uploadInsurance', () => {
     process.env.TWILIO_TOKEN = 'token';
     process.env.S3_BUCKET = 'bucket';
     ({ __insuranceDocs } = require('@prisma/client'));
-    uploadInsurance = require('../index');
+    uploadInsurance = require('../service');
     __insuranceDocs.length = 0;
   });
 
@@ -33,7 +33,7 @@ test('missing S3_BUCKET throws error', () => {
     delete process.env.S3_BUCKET;
     jest.resetModules();
     expect(() => {
-      require('../index');
+      require('../service');
     }).toThrow('Missing required env vars: S3_BUCKET');
     process.env.S3_BUCKET = 'bucket';
   });

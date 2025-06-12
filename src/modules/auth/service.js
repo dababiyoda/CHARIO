@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const { config } = require('../../../src/config/env');
+const { config } = require('../../config/env');
 const SECRET = config.JWT_SECRET;
 
 function authenticate(req, res, next) {
