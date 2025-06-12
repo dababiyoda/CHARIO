@@ -31,8 +31,18 @@ jobs:
         run: npm ci
       - name: Lint
         run: npm run lint
-      - name: Test with coverage
-        run: npm run test:ci
+      - name: Test
+        run: npm test
+      - name: Coverage
+        run: npx jest --coverage --coverageReporters=json-summary
+      - name: coverage-gate
+        run: |
+          pct=$(grep -o '"statements"[^}]*' coverage/coverage-summary.json | head -n 1 | grep -o '"pct":[0-9.]*' | grep -o '[0-9.]*')
+          echo "Statements coverage: $pct"
+          if [ "$(printf '%.*f' 0 "$pct")" -lt 80 ]; then
+            echo "Coverage below 80%"
+            exit 1
+          fi
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
@@ -40,6 +50,8 @@ jobs:
           path: |
             coverage
             coverage.svg
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v4
       - name: Deploy to Fly.io
         if: github.ref == 'refs/heads/main'
         run: flyctl deploy --remote-only
