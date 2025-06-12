@@ -1,8 +1,10 @@
 jest.mock('aws-sdk', () => {
-  return { S3: jest.fn(() => ({
-    putObject: jest.fn(() => ({ promise: jest.fn().mockResolvedValue({}) })),
-    getSignedUrl: jest.fn(() => 'http://signed-url')
-  })) };
+  return {
+    S3: jest.fn(() => ({
+      putObject: jest.fn(() => ({ promise: jest.fn().mockResolvedValue({}) })),
+      getSignedUrl: jest.fn(() => 'http://signed-url'),
+    })),
+  };
 });
 
 let uploadInsurance;
@@ -23,7 +25,7 @@ describe('uploadInsurance', () => {
     __insuranceDocs.length = 0;
   });
 
-test('uploads file to s3 and records doc', async () => {
+  test('uploads file to s3 and records doc', async () => {
     await uploadInsurance(Buffer.from('buf'), 'f.txt', 1);
     expect(__insuranceDocs.length).toBe(1);
     expect(__insuranceDocs[0]).toMatchObject({ ride_id: 1, s3_key: 'f.txt' });
@@ -31,20 +33,23 @@ test('uploads file to s3 and records doc', async () => {
     expect(url).toBe('http://signed-url');
   });
 
-test('missing S3_BUCKET throws error', () => {
+  test('missing S3_BUCKET throws error', () => {
     delete process.env.S3_BUCKET;
     jest.resetModules();
     expect(() => {
       require('../service');
-    }).toThrow('Missing required env vars: S3_BUCKET');
+    }).toThrow('S3_BUCKET');
     process.env.S3_BUCKET = 'bucket';
   });
 
-test('upload failure propagates error', async () => {
+  test('upload failure propagates error', async () => {
     const AWS = require('aws-sdk');
     const instance = AWS.S3.mock.results[0].value;
-    instance.putObject.mockImplementation(() => ({ promise: jest.fn().mockRejectedValue(new Error('fail')) }));
-    await expect(uploadInsurance(Buffer.from('b'), 'f.txt', 1))
-      .rejects.toThrow('fail');
-});
+    instance.putObject.mockImplementation(() => ({
+      promise: jest.fn().mockRejectedValue(new Error('fail')),
+    }));
+    await expect(uploadInsurance(Buffer.from('b'), 'f.txt', 1)).rejects.toThrow(
+      'fail',
+    );
+  });
 });

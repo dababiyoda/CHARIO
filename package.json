@@ -59,7 +59,8 @@
     "prisma": "^6.9.0",
     "supertest": "^6.3.3",
     "tailwindcss": "^4.1.10",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "dotenv-safe": "^9.1.0"
   },
   "jest": {
     "setupFiles": ["<rootDir>/tests/jest.setup.js"],
