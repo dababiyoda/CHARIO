@@ -3,10 +3,19 @@ module.exports = {
   content: ['./public/**/*.html', './frontend/**/*.{js,jsx}'],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont'],
+      },
+      borderRadius: {
+        lg: '1rem',
+        full: '9999px',
+      },
       colors: {
         slate: colors.slate,
-        primary: '#0d6efd',
-        accent: '#34c759',
+        primary: '#0A84FF',
+        success: '#32D74B',
+        danger: '#FF4646',
+        bg: '#F2F2F7',
       },
     },
   },
@@ -15,8 +24,8 @@ module.exports = {
     themes: [
       {
         mytheme: {
-          primary: '#0d6efd',
-          accent: '#34c759',
+          primary: '#0A84FF',
+          accent: '#32D74B',
         },
       },
     ],

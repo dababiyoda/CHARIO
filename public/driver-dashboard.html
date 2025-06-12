@@ -21,23 +21,14 @@
     ></script>
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         margin: 20px;
       }
-      .card {
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 10px;
-        margin-bottom: 10px;
-      }
-      .card-title {
-        font-size: 18px;
-        font-weight: bold;
-      }
-      button {
-        margin-top: 10px;
-        padding: 6px 10px;
-        cursor: pointer;
+      @supports (-webkit-touch-callout: none) {
+        button {
+          min-height: 48px;
+          min-width: 48px;
+        }
       }
     </style>
   </head>
@@ -47,6 +38,28 @@
     <script type="text/babel">
       const { useState, useEffect } = React;
       const { Calendar, Map, DollarSign } = ReactFeather;
+
+      function Button({ children, className = '', ...props }) {
+        return (
+          <button
+            {...props}
+            className={`rounded-full shadow px-4 py-2 transition-transform duration-150 hover:scale-95 ${className}`}
+          >
+            {children}
+          </button>
+        );
+      }
+
+      function Card({ children, className = '', ...props }) {
+        return (
+          <div
+            {...props}
+            className={`rounded-lg shadow bg-white/90 backdrop-blur p-4 ${className}`}
+          >
+            {children}
+          </div>
+        );
+      }
 
       function BottomNav() {
         return (
@@ -83,15 +96,18 @@
           <div>
             <h1>Driver Dashboard</h1>
             {rides.map((ride) => (
-              <div key={ride.id} className="card">
-                <div className="card-title">{ride.patient_name}</div>
+              <Card key={ride.id} className="mb-2">
+                <div className="font-bold">{ride.patient_name}</div>
                 <div>
                   Pickup Time: {new Date(ride.pickup_time).toLocaleString()}
                 </div>
-                <button onClick={() => openNavigation(ride.pickup_address)}>
+                <Button
+                  onClick={() => openNavigation(ride.pickup_address)}
+                  className="mt-2"
+                >
                   Start Navigation
-                </button>
-              </div>
+                </Button>
+              </Card>
             ))}
           </div>
         );
