@@ -7,7 +7,7 @@
     "test": "jest",
     "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand --coverageReporters=lcov --coverageReporters=json-summary",
     "start": "node index.js",
-    "lint": "eslint . --ignore-pattern \"coverage/**\"",
+    "lint": "ESLINT_USE_FLAT_CONFIG=true eslint . --ignore-pattern \"coverage/**\"",
     "prepare": "husky install",
     "test:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary && npx --yes make-coverage-badge --report-path coverage/coverage-summary.json --output-path coverage.svg",
     "migrate": "knex migrate:latest",

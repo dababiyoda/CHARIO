@@ -11,6 +11,5 @@ expect.extend(toHaveNoViolations);
 
 test('BookingForm is accessible', async () => {
   const { container } = render(React.createElement(BookingForm));
-  const results = await axe(container);
-  expect(results).toHaveNoViolations();
+  await expect(axe(container)).resolves.toHaveNoViolations();
 });
