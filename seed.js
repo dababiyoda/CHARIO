@@ -1,7 +1,9 @@
 const { Client } = require('pg');
 
+const { config } = require('./src/config/env');
+
 const client = new Client({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: config.DATABASE_URL,
 });
 
 async function seed() {

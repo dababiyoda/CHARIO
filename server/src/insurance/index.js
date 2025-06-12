@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const { Pool } = require('pg');
 const { Readable } = require('stream');
 
+const { config } = require('../../../src/config/env');
 const s3 = new AWS.S3();
 const pool = new Pool();
 
@@ -13,7 +14,7 @@ const pool = new Pool();
  * @returns {Promise<string>} pre-signed download URL
  */
 async function uploadInsurance(fileBuffer, fileName, rideId) {
-  const bucket = process.env.S3_BUCKET;
+  const bucket = config.S3_BUCKET;
   if (!bucket) throw new Error('S3_BUCKET env var required');
 
   const stream = Readable.from(fileBuffer);

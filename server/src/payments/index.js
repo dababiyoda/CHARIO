@@ -1,4 +1,5 @@
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { config } = require('../../../src/config/env');
+const stripe = require('stripe')(config.STRIPE_KEY);
 const { Pool } = require('pg');
 
 const pool = new Pool();

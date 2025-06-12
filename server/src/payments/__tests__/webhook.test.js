@@ -2,6 +2,13 @@ jest.mock('pg');
 
 const request = require('supertest');
 const stripe = require('stripe')('sk_test');
+process.env.DATABASE_URL = 'postgres://test';
+process.env.JWT_SECRET = 'secret';
+process.env.STRIPE_KEY = 'sk';
+process.env.TWILIO_SID = 'sid';
+process.env.TWILIO_TOKEN = 'token';
+process.env.S3_BUCKET = 'bucket';
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 const { app, io } = require('../../app');
 const { __rides } = require('pg');
 

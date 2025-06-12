@@ -6,7 +6,8 @@ const pinoHttp = require('pino-http');
 const { randomUUID } = require('crypto');
 const { observeRequest, metricsEndpoint } = require('./metrics');
 let pool;
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || '');
+const { config } = require('../../src/config/env');
+const stripe = require('stripe')(config.STRIPE_KEY || '');
 const { payoutDriver } = require('./payments/payouts');
 const { authenticate } = require('./auth');
 const { sendSMS } = require('./rides/sms');
@@ -22,7 +23,7 @@ const logger = pinoHttp({
 });
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 function requireTLS(req, res, next) {
-  if (process.env.NODE_ENV === 'test') {
+  if (config.NODE_ENV === 'test') {
     return next();
   }
   if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
@@ -43,7 +44,7 @@ app.post(
   express.raw({ type: 'application/json' }),
   async (req, res) => {
     const sig = req.header('stripe-signature');
-    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    const secret = config.STRIPE_WEBHOOK_SECRET;
     let event;
     try {
       event = stripe.webhooks.constructEvent(req.body, sig, secret);
