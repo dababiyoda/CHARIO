@@ -17,7 +17,7 @@ const cron = require('node-cron');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { logAudit } = require('./utils/audit');
-const audit = require('./utils/middleware/audit');
+const audit = require('./middleware/audit');
 const {
   validate,
   bookRideSchema,
