@@ -1,18 +1,45 @@
 const express = require('express');
 const http = require('http');
+const https = require('https');
+const fs = require('fs');
 const { Server } = require('socket.io');
 const { Pool } = require('pg');
 const { payoutDriver } = require('./payments/payouts');
 const { authenticate } = require('./auth');
 const { sendSMS } = require('./rides/sms');
 const cron = require('node-cron');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const auditLog = require('./middleware/audit');
+const validate = require('./middleware/validate');
+const { z } = require('zod');
 
 const app = express();
+app.use(helmet());
+app.use(rateLimit({ windowMs: 60 * 1000, max: 60 }));
 app.use(express.json());
 app.use(express.static('public'));
+app.use(auditLog);
 
-// HTTP and Socket.io server setup
-const server = http.createServer(app);
+if (process.env.FORCE_HTTPS === 'true') {
+  app.enable('trust proxy');
+  app.use((req, res, next) => {
+    if (!req.secure) {
+      return res.redirect('https://' + req.headers.host + req.url);
+    }
+    next();
+  });
+}
+
+// HTTP/HTTPS and Socket.io server setup
+let server;
+if (process.env.HTTPS_KEY_PATH && process.env.HTTPS_CERT_PATH) {
+  const key = fs.readFileSync(process.env.HTTPS_KEY_PATH);
+  const cert = fs.readFileSync(process.env.HTTPS_CERT_PATH);
+  server = https.createServer({ key, cert }, app);
+} else {
+  server = http.createServer(app);
+}
 const io = new Server(server, { cors: { origin: '*' } });
 
 io.on('connection', (socket) => {
@@ -33,29 +60,29 @@ function requireDriver(req, res, next) {
   next();
 }
 
+const createRideSchema = z.object({
+  pickup_time: z.string().refine((val) => {
+    const d = new Date(val);
+    return !isNaN(d.getTime()) && d.getTime() - Date.now() >= 7 * 24 * 60 * 60 * 1000;
+  }, { message: 'pickup_time must be at least 7 days in the future' }),
+  pickup_address: z.string().min(1),
+  dropoff_address: z.string().min(1),
+  payment_type: z.enum(['insurance', 'card'])
+});
+
+const ridesQuerySchema = z.object({
+  status: z.string().optional(),
+  driver_id: z.string().optional(),
+  patient_id: z.string().optional()
+});
+
+const idParamSchema = z.object({ id: z.string().min(1) });
+
 // POST /rides handler
-app.post('/rides', async (req, res) => {
+app.post('/rides', validate(createRideSchema), async (req, res) => {
   try {
     const { pickup_time, pickup_address, dropoff_address, payment_type } = req.body;
-
-    // basic validation
-    if (!pickup_address || !dropoff_address) {
-      return res.status(400).json({ error: 'pickup_address and dropoff_address are required' });
-    }
-
-    if (!['insurance', 'card'].includes(payment_type)) {
-      return res.status(400).json({ error: 'payment_type must be "insurance" or "card"' });
-    }
-
     const pickupTime = new Date(pickup_time);
-    if (isNaN(pickupTime.getTime())) {
-      return res.status(400).json({ error: 'pickup_time must be a valid date' });
-    }
-
-    const msInWeek = 7 * 24 * 60 * 60 * 1000;
-    if (pickupTime.getTime() - Date.now() < msInWeek) {
-      return res.status(400).json({ error: 'pickup_time must be at least 7 days in the future' });
-    }
 
     const insertQuery = `
       INSERT INTO rides (pickup_time, pickup_address, dropoff_address, payment_type, status)
@@ -75,7 +102,7 @@ app.post('/rides', async (req, res) => {
 });
 
 // GET /rides handler
-app.get('/rides', authenticate, async (req, res) => {
+app.get('/rides', authenticate, validate(ridesQuerySchema, 'query'), async (req, res) => {
   try {
     const { status, driver_id, patient_id } = req.query;
     const clauses = [];
@@ -121,7 +148,7 @@ app.get('/rides', authenticate, async (req, res) => {
 });
 
 // PUT /rides/:id/assign handler
-app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
+app.put('/rides/:id/assign', authenticate, requireDriver, validate(idParamSchema, 'params'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -144,7 +171,7 @@ app.put('/rides/:id/assign', authenticate, requireDriver, async (req, res) => {
 });
 
 // PUT /rides/:id/complete handler
-app.put('/rides/:id/complete', authenticate, requireDriver, async (req, res) => {
+app.put('/rides/:id/complete', authenticate, requireDriver, validate(idParamSchema, 'params'), async (req, res) => {
   try {
     const { id } = req.params;
 

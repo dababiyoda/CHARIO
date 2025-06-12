@@ -56,3 +56,20 @@ CREATE TABLE rides (
 -- Indexes for queries on pickup_time and status
 CREATE INDEX idx_rides_pickup_time ON rides(pickup_time);
 CREATE INDEX idx_rides_status ON rides(status);
+
+-- Uploaded insurance documents
+CREATE TABLE insurance_docs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    ride_id UUID REFERENCES rides(id) ON DELETE CASCADE,
+    s3_key TEXT NOT NULL,
+    uploaded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Audit log of PHI access
+CREATE TABLE phi_access_logs (
+    id SERIAL PRIMARY KEY,
+    user_id UUID,
+    route TEXT NOT NULL,
+    method TEXT NOT NULL,
+    accessed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

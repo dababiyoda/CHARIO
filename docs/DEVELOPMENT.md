@@ -44,3 +44,5 @@ Make sure the database defined by `DATABASE_URL` is running and accessible.
 
 See [README.md](../README.md) for all required environment variables.
 
+For production deployments ensure that the PostgreSQL instance is configured with encryption at rest to meet HIPAA requirements.
+
