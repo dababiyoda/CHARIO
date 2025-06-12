@@ -33,3 +33,21 @@ jobs:
         env:
           DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
       - run: bash .github/scripts/coverage-gate.sh
+
+  security:
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+      - uses: github/codeql-action/analyze@v3
+      - uses: trufflesecurity/trufflehog@v3
+        with:
+          path: '.'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
