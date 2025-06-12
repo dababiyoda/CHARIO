@@ -10,6 +10,7 @@ const { config } = require('./config/env');
 const stripe = require('stripe')(config.STRIPE_KEY);
 const { payoutDriver } = require('./modules/payments/payouts');
 const createWebhookRouter = require('./modules/payments/routes');
+const createInsuranceRouter = require('./modules/insurance/routes');
 const { authenticate, issueToken } = require('./modules/auth/service');
 const { sendSMS } = require('./modules/rides/service');
 const cron = require('node-cron');
@@ -76,6 +77,7 @@ io.on('connection', (socket) => {
 app.use(createWebhookRouter(io));
 app.use(express.json());
 app.use(audit);
+app.use(createInsuranceRouter());
 
 const users = new Map();
 
