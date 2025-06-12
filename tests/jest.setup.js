@@ -1,3 +1,6 @@
+const nock = require('nock');
+nock('https://api.stripe.com').post(/.*/).reply(200, { success: true });
+
 process.env = {
   ...process.env,
   DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test',

@@ -7,6 +7,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
     services:
       postgres:
         image: postgres:15-alpine
@@ -29,13 +31,11 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - name: Create chario database
+        run: psql postgresql://chario:chario@localhost:5432/postgres -c "CREATE DATABASE chario;"
       - run: npx markdown-lint docs/**/*.md
       - run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
       - run: npm run test:coverage
-        env:
-          DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
       - run: bash .github/scripts/coverage-gate.sh
       - uses: github/codeql-action/analyze@v3
       - uses: trufflesecurity/trufflehog@v3.89.1
