@@ -5,8 +5,6 @@ const { getLogger } = require('./logger');
 
 const log = getLogger(__filename);
 
-client.collectDefaultMetrics();
-
 const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'Duration of HTTP requests in seconds',
@@ -30,19 +28,4 @@ function observeRequest(req, res, next) {
   next();
 }
 
-async function metricsEndpoint(req, res) {
-  const credentials = auth(req);
-  if (
-    !credentials ||
-    credentials.name !== config.METRICS_USER ||
-    credentials.pass !== config.METRICS_PASS
-  ) {
-    res.set('WWW-Authenticate', 'Basic');
-    return res.status(401).send('authentication required');
-  }
-  log.debug('Serving metrics');
-  res.set('Content-Type', client.register.contentType);
-  res.end(await client.register.metrics());
-}
-
-module.exports = { observeRequest, metricsEndpoint };
+module.exports = { observeRequest };
