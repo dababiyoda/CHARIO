@@ -5,7 +5,9 @@ const { prisma } = require('./utils/db');
 const pinoHttp = require('pino-http');
 const { getLogger } = require('./utils/logger');
 const { randomUUID, createHash } = require('crypto');
-const { observeRequest, metricsEndpoint } = require('./utils/metrics');
+const { observeRequest } = require('./utils/metrics');
+const client = require('prom-client');
+const basicAuth = require('basic-auth');
 const { config } = require('./config/env');
 const stripe = require('stripe')(config.STRIPE_KEY);
 const { payoutDriver } = require('./modules/payments/payouts');
@@ -28,6 +30,7 @@ const {
 } = require('./utils/middleware/validate');
 
 const app = express();
+client.collectDefaultMetrics();
 const httpLogger = pinoHttp({
   genReqId: (req) => req.headers['x-correlation-id'] || randomUUID(),
 });
@@ -60,7 +63,23 @@ app.get('/health', async (req, res) => {
   await stripe.balance.retrieve().catch(() => null);
   res.json({ db: 'ok', stripe: 'ok', version: process.pkg.version });
 });
-app.get('/metrics', metricsEndpoint);
+function metricsAuth(req, res, next) {
+  const creds = basicAuth(req);
+  if (
+    !creds ||
+    creds.name !== 'metrics' ||
+    creds.pass !== config.METRICS_PASS
+  ) {
+    res.set('WWW-Authenticate', 'Basic');
+    return res.status(401).send('authentication required');
+  }
+  return next();
+}
+
+app.get('/metrics', metricsAuth, async (req, res) => {
+  res.set('Content-Type', client.register.contentType);
+  res.end(await client.register.metrics());
+});
 
 // HTTP and Socket.io server setup
 const server = http.createServer(app);
