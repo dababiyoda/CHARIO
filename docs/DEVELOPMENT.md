@@ -4,15 +4,15 @@ This document provides an overview of the repository layout and tips for local d
 
 ## Repository layout
 
-- `index.js` – Express entry point exposing the REST API and Socket.IO server.
-- `auth.js` – Helpers for issuing and verifying JWTs.
-- `payments.js` – Stripe integration used to charge patients.
-- `payouts.js` – Stub for paying out drivers (replace with your own logic).
-- `insurance.js` – Uploads insurance documents to S3 compatible storage.
-- `sms.js` – Sends SMS notifications via Twilio.
+- `index.js` – Bootstrap file that loads environment variables and starts the server.
+- `server/src/` – Back-end source organized by feature:
+  - `auth/` – Helpers for issuing and verifying JWTs.
+  - `payments/` – Stripe integration and driver payouts.
+  - `insurance/` – Uploads insurance documents to S3 compatible storage.
+  - `rides/` – Express routes and SMS helpers for ride scheduling.
 - `frontend/` – React components used by the demo front‑end.
 - `public/` – Static HTML served by the API server.
-- `__tests__/` – Jest test suite with mocked database.
+- `__tests__/` – Reserved for integration tests.
 - `docs/ARCHITECTURE.md` – Request flows and schema overview.
 
 ## Running locally
