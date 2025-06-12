@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import Button from './components/Button.jsx';
+import Button from './components/ui/Button.jsx';
+import Card from './components/ui/Card.jsx';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -43,90 +44,95 @@ const BookingForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-4 space-y-4">
-      <div>
-        <label className="block text-sm font-medium mb-1" htmlFor="pickup">
-          Pickup Address
-        </label>
-        <input
-          id="pickup"
-          type="text"
-          value={pickupAddress}
-          onChange={(e) => setPickupAddress(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium mb-1" htmlFor="destination">
-          Destination
-        </label>
-        <input
-          id="destination"
-          type="text"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          className="w-full border rounded px-3 py-2"
-          required
-        />
-      </div>
-      <div className="flex space-x-2">
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1" htmlFor="date">
-            Date
+    <Card className="max-w-md mx-auto">
+      <form onSubmit={handleSubmit} className="p-4 space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1" htmlFor="pickup">
+            Pickup Address
           </label>
           <input
-            id="date"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            id="pickup"
+            type="text"
+            value={pickupAddress}
+            onChange={(e) => setPickupAddress(e.target.value)}
             className="w-full border rounded px-3 py-2"
             required
           />
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-medium mb-1" htmlFor="time">
-            Time
+        <div>
+          <label
+            className="block text-sm font-medium mb-1"
+            htmlFor="destination"
+          >
+            Destination
           </label>
           <input
-            id="time"
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
+            id="destination"
+            type="text"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
             className="w-full border rounded px-3 py-2"
             required
           />
         </div>
-      </div>
-      <div>
-        <span className="block text-sm font-medium mb-1">Payment Type</span>
-        <label className="mr-4">
-          <input
-            type="radio"
-            name="payment_type"
-            value="insurance"
-            checked={paymentType === 'insurance'}
-            onChange={() => setPaymentType('insurance')}
-            className="mr-1"
-          />
-          Insurance
-        </label>
-        <label>
-          <input
-            type="radio"
-            name="payment_type"
-            value="card"
-            checked={paymentType === 'card'}
-            onChange={() => setPaymentType('card')}
-            className="mr-1"
-          />
-          Card
-        </label>
-      </div>
-      <Button type="submit" variant="primary" className="w-full">
-        Book Ride
-      </Button>
-    </form>
+        <div className="flex space-x-2">
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-1" htmlFor="date">
+              Date
+            </label>
+            <input
+              id="date"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-sm font-medium mb-1" htmlFor="time">
+              Time
+            </label>
+            <input
+              id="time"
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="w-full border rounded px-3 py-2"
+              required
+            />
+          </div>
+        </div>
+        <div>
+          <span className="block text-sm font-medium mb-1">Payment Type</span>
+          <label className="mr-4">
+            <input
+              type="radio"
+              name="payment_type"
+              value="insurance"
+              checked={paymentType === 'insurance'}
+              onChange={() => setPaymentType('insurance')}
+              className="mr-1"
+            />
+            Insurance
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="payment_type"
+              value="card"
+              checked={paymentType === 'card'}
+              onChange={() => setPaymentType('card')}
+              className="mr-1"
+            />
+            Card
+          </label>
+        </div>
+        <Button type="submit" className="w-full">
+          Book Ride
+        </Button>
+      </form>
+    </Card>
   );
 };
 
