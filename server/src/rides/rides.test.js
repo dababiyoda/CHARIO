@@ -54,4 +54,26 @@ describe('/rides booking endpoint', () => {
 
     expect(after).toBe(before + 1);
   });
+
+  test('missing fields return 400', async () => {
+    const future = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
+    const res = await request(app)
+      .post('/rides')
+      .send({ pickup_time: future, dropoff_address: 'B', payment_type: 'card' });
+    expect(res.status).toBe(400);
+  });
+
+  test('database errors return 500', async () => {
+    const future = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
+    jest.spyOn(pool, 'query').mockRejectedValueOnce(new Error('db fail'));
+    const res = await request(app)
+      .post('/rides')
+      .send({
+        pickup_time: future,
+        pickup_address: 'A',
+        dropoff_address: 'B',
+        payment_type: 'card'
+      });
+    expect(res.status).toBe(500);
+  });
 });
