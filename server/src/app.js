@@ -7,8 +7,8 @@ const { randomUUID } = require('crypto');
 const { observeRequest, metricsEndpoint } = require('./metrics');
 let pool;
 const { config } = require('../../src/config/env');
-const stripe = require('stripe')(config.STRIPE_KEY || '');
 const { payoutDriver } = require('./payments/payouts');
+const createWebhookRouter = require('./payments/webhook');
 const { authenticate } = require('./auth');
 const { sendSMS } = require('./rides/sms');
 const cron = require('node-cron');
@@ -39,40 +39,6 @@ app.use((req, res, next) => {
 });
 app.use(observeRequest);
 
-app.post(
-  '/webhook/stripe',
-  express.raw({ type: 'application/json' }),
-  async (req, res) => {
-    const sig = req.header('stripe-signature');
-    const secret = config.STRIPE_WEBHOOK_SECRET;
-    let event;
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, secret);
-    } catch (err) {
-      console.error('Invalid stripe signature', err);
-      return res.status(400).send('invalid signature');
-    }
-
-    if (event.type === 'payment_intent.succeeded') {
-      const intent = event.data.object;
-      try {
-        const { rows } = await pool.query(
-          `UPDATE rides SET status = 'confirmed' WHERE stripe_payment_id = $1 RETURNING *`,
-          [intent.id]
-        );
-        if (rows[0]) {
-          io.to('drivers').emit('payment_confirmed', rows[0]);
-        }
-      } catch (err) {
-        console.error('Failed to update ride after webhook', err);
-        return res.status(500).send('db error');
-      }
-    }
-
-    res.json({ received: true });
-  }
-);
-app.use(express.json());
 app.use(helmet());
 app.use(limiter);
 app.use(express.static('public'));
@@ -107,6 +73,8 @@ io.on('connection', (socket) => {
 });
 
 pool = new Pool();
+app.use(createWebhookRouter(io));
+app.use(express.json());
 
 function requireDriver(req, res, next) {
   if (!req.user) {
