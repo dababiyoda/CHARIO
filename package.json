@@ -6,7 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "node index.js",
-    "lint": "eslint ."
+    "lint": "eslint . --ignore-pattern \"coverage/**\"",
+    "test:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov && npx --yes lcov-badge coverage/lcov.info -o coverage.svg"
   },
   "keywords": [],
   "author": "",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "jest": "^29.6.1",
     "supertest": "^6.3.3",
-    "eslint": "^9.28.0"
+    "eslint": "^9.28.0",
+    "lcov-badge": "^1.0.4"
   }
 }

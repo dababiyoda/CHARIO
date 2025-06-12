@@ -1,4 +1,5 @@
 # CHARIO
+![Coverage](coverage.svg)
 
 CHARIO is a simplified ride scheduling system for non-emergency medical transport. Patients can request rides in advance, drivers claim available trips and everyone receives real‑time updates.
 
@@ -55,6 +56,11 @@ Install dependencies and run:
 ```bash
 npm test
 ```
+For coverage reporting (fails under 80%), run:
+```bash
+npm run test:ci
+```
+
 
 ## Docker image
 

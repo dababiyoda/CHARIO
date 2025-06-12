@@ -1,0 +1,22 @@
+name: OWASP Dependency Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@v3.0.2
+        with:
+          project: 'CHARIO'
+          path: '.'
+          format: 'HTML'
+      - name: Upload report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: ./reports
