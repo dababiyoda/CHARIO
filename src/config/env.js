@@ -1,8 +1,17 @@
 const { config: dotenvSafe } = require('dotenv-safe');
 const { z } = require('zod');
+const path = require('path');
 
-// Load environment variables. Tests inject values so allow empty ones.
-dotenvSafe({ allowEmptyValues: true });
+// Load environment variables. During tests, rely solely on process.env
+if (process.env.NODE_ENV === 'test') {
+  dotenvSafe({
+    allowEmptyValues: true,
+    path: path.resolve(__dirname, '../../.env.test'), // skip loading .env
+    example: path.resolve(__dirname, '../../.env.example'),
+  });
+} else {
+  dotenvSafe({ allowEmptyValues: true });
+}
 
 const env = {
   DATABASE_URL: process.env.DATABASE_URL,
