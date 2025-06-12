@@ -6,22 +6,30 @@ This document provides an overview of the CHARIO service including request flows
 
 ```mermaid
 sequenceDiagram
-    participant P as Patient App
+    participant Patient
     participant API
-    participant DB as Postgres
-    participant Tw as Twilio
-    participant D as Driver App
+    participant Stripe
 
-    P->>API: POST /rides
-    API->>DB: insert ride
-    API-->>Tw: SMS confirmation
-    API-->>D: socket "new_ride"
-    D->>API: PUT /rides/:id/assign
-    API->>DB: mark driver
-    D->>API: PUT /rides/:id/complete
-    API->>DB: mark complete
-    API-->>Tw: SMS receipt
+    Patient->>API: POST /pay
+    API->>Stripe: create payment intent
+    Stripe-->>API: payment result
+    API-->>Patient: confirmation
 ```
+
+## Endpoint security
+
+| Endpoint | Auth | Rate-limit | Audit-log |
+| -------- | ---- | ---------- | --------- |
+| POST /signup | none | yes | yes |
+| POST /login | none | yes | yes |
+| POST /rides | none | yes | yes |
+| GET /rides | bearer | yes | yes |
+| PUT /rides/:id/assign | driver token | yes | yes |
+| PUT /rides/:id/complete | driver token | yes | yes |
+| GET /insurance/:id | bearer | yes | no |
+| POST /webhook/stripe | secret | yes | no |
+| GET /metrics | basic auth | yes | no |
+| GET /health | none | yes | no |
 
 ## Database schema
 
