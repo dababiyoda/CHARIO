@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY . .
 EXPOSE 3000
-CMD ["node", "index.js"]
+CMD ["sh", "-c", "npm run migrate && npm run seed && node index.js"]
