@@ -1,7 +1,8 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Driver Dashboard</title>
     <script
       crossorigin
@@ -42,7 +43,7 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <main id="root"></main>
 
     <script type="text/babel">
       const { useState, useEffect } = React;
@@ -51,13 +52,13 @@
       function BottomNav() {
         return (
           <nav className="fixed bottom-0 inset-x-0 bg-white border-t flex justify-around p-2">
-            <button aria-label="book">
+            <button type="button" aria-label="book">
               <Calendar />
             </button>
-            <button aria-label="rides">
+            <button type="button" aria-label="rides">
               <Map />
             </button>
-            <button aria-label="earnings">
+            <button type="button" aria-label="earnings">
               <DollarSign />
             </button>
           </nav>
@@ -88,7 +89,10 @@
                 <div>
                   Pickup Time: {new Date(ride.pickup_time).toLocaleString()}
                 </div>
-                <button onClick={() => openNavigation(ride.pickup_address)}>
+                <button
+                  onClick={() => openNavigation(ride.pickup_address)}
+                  aria-label="start navigation"
+                >
                   Start Navigation
                 </button>
               </div>
