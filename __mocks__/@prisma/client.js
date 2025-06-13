@@ -1,6 +1,8 @@
 const rides = [];
 const insuranceDocs = [];
 const auditLogs = [];
+const users = [];
+const sessions = [];
 
 class PrismaClient {
   constructor() {
@@ -77,6 +79,37 @@ class PrismaClient {
         auditLogs.push({ id: String(auditLogs.length + 1), ...data });
       },
     };
+
+    this.user = {
+      create: async ({ data }) => {
+        const user = { id: String(users.length + 1), ...data };
+        users.push(user);
+        return user;
+      },
+      findUnique: async ({ where }) => {
+        if (where.id) return users.find((u) => u.id === where.id) || null;
+        if (where.email)
+          return users.find((u) => u.email === where.email) || null;
+        return null;
+      },
+    };
+
+    this.session = {
+      create: async ({ data }) => {
+        const session = { id: String(sessions.length + 1), ...data };
+        sessions.push(session);
+        return session;
+      },
+      findUnique: async ({ where }) => {
+        return sessions.find((s) => s.id === where.id) || null;
+      },
+      update: async ({ where, data }) => {
+        const session = sessions.find((s) => s.id === where.id);
+        if (!session) throw new Error('not found');
+        Object.assign(session, data);
+        return session;
+      },
+    };
     this.$queryRaw = async () => [{ '?column?': 1 }];
   }
 }
@@ -85,4 +118,6 @@ module.exports = {
   PrismaClient,
   __rides: rides,
   __insuranceDocs: insuranceDocs,
+  __users: users,
+  __sessions: sessions,
 };

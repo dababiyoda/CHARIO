@@ -14,6 +14,7 @@ const { payoutDriver } = require('./modules/payments/payouts');
 const createWebhookRouter = require('./modules/payments/routes');
 const createInsuranceRouter = require('./modules/insurance/routes');
 const { authenticate, issueToken } = require('./modules/auth/service');
+const createAuthRouter = require('./modules/auth/routes');
 const { sendSMS } = require('./modules/rides/service');
 const cron = require('node-cron');
 const helmet = require('helmet');
@@ -97,6 +98,7 @@ app.use(createWebhookRouter(io));
 app.use(express.json());
 app.use(audit);
 app.use(createInsuranceRouter());
+app.use('/auth', createAuthRouter());
 
 const users = new Map();
 

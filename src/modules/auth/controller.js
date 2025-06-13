@@ -1,1 +1,1 @@
-// empty module
+// placeholder controller for future expansion
