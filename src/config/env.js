@@ -75,7 +75,7 @@ const env = {
 
 const schema = z.object({
   DATABASE_URL: z.string().nonempty(),
-  JWT_SECRET: z.string().nonempty(),
+  JWT_SECRET: z.string().min(32, 'secret too short'),
   STRIPE_KEY: z.string().nonempty(),
   TWILIO_SID: z.string().nonempty(),
   TWILIO_TOKEN: z.string().nonempty(),
@@ -85,6 +85,13 @@ const schema = z.object({
 
 const result = schema.safeParse(env);
 if (!result.success) {
+  const jwtError = result.error.errors.find(
+    (e) => e.path[0] === 'JWT_SECRET' && e.message === 'secret too short',
+  );
+  if (jwtError) {
+    console.error('JWT_SECRET must be at least 32 characters');
+    process.exit(1);
+  }
   const missing = result.error.errors.map((e) => e.path[0]).join(', ');
   throw new Error(`Missing required env vars: ${missing}`);
 }

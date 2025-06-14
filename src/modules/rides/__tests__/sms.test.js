@@ -8,7 +8,7 @@ describe('sendSMS', () => {
   beforeEach(() => {
     jest.resetModules();
     process.env.DATABASE_URL = 'postgres://test';
-    process.env.JWT_SECRET = 'secret';
+    process.env.JWT_SECRET = 'a'.repeat(32);
     process.env.STRIPE_KEY = 'sk';
     process.env.TWILIO_SID = 'sid';
     process.env.TWILIO_TOKEN = 'token';
