@@ -10,4 +10,6 @@ process.env = {
   TWILIO_TOKEN: 'xxx',
   S3_BUCKET: 'dummy',
   PATIENT_DATA_KEY: 'testkey',
+  STRIPE_ENDPOINT_SECRET: 'whsec_test',
+  NODE_ENV: 'test',
 };

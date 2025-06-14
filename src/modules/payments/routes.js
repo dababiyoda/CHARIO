@@ -11,20 +11,25 @@ function createWebhookRouter(io) {
 
   router.post(
     '/webhook/stripe',
-    express.raw({ type: 'application/json' }),
+    express.raw({
+      type: 'application/json',
+      verify: (req, res, buf) => {
+        req.rawBody = buf;
+      },
+    }),
     async (req, res) => {
-      const sig = req.header('stripe-signature');
+      const sig = req.headers['stripe-signature'];
+      let event;
       try {
-        const rawBody = req.body;
-        const event = stripe.webhooks.constructEvent(
-          rawBody,
+        event = stripe.webhooks.constructEvent(
+          req.rawBody,
           sig,
-          config.STRIPE_WEBHOOK_SECRET,
+          process.env.STRIPE_ENDPOINT_SECRET,
         );
 
         if (
-          (event.livemode && config.NODE_ENV !== 'production') ||
-          (!event.livemode && config.NODE_ENV === 'production')
+          (event.livemode && process.env.NODE_ENV !== 'production') ||
+          (!event.livemode && process.env.NODE_ENV === 'production')
         ) {
           return res.status(400).send('livemode mismatch');
         }
