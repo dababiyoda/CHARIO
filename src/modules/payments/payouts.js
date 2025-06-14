@@ -1,5 +1,6 @@
 const { Queue } = require('bullmq');
 const IORedis = require('ioredis');
+const crypto = require('crypto');
 const { config } = require('../../config/env');
 const { getLogger } = require('../../utils/logger');
 
@@ -21,7 +22,20 @@ async function payoutDriver(_driverId, rideId) {
     log.warn({ rideId }, 'Redis not configured; payout skipped');
     return;
   }
-  await q.add('payout', { rideId });
+  const date = new Date().toISOString().slice(0, 10);
+  const jobId = crypto
+    .createHash('sha256')
+    .update(`${rideId}${date}`)
+    .digest('hex');
+  await q.add(
+    'payout',
+    { rideId },
+    {
+      jobId,
+      attempts: 5,
+      backoff: { type: 'exponential', delay: 5000 },
+    },
+  );
   log.info({ rideId }, 'Queued payout');
 }
 

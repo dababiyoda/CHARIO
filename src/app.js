@@ -16,7 +16,9 @@ const createInsuranceRouter = require('./modules/insurance/routes');
 const { authenticate, issueToken } = require('./modules/auth/service');
 const createAuthRouter = require('./modules/auth/routes');
 const { sendSMS } = require('./modules/rides/service');
-const cron = require('node-cron');
+const { Queue, QueueScheduler } = require('bullmq');
+const IORedis = require('ioredis');
+const Redlock = require('redlock');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { logAudit } = require('./utils/audit');
@@ -340,37 +342,50 @@ app.put(
 );
 
 // Cron job: send reminders for rides happening in 24 hours
-function scheduleReminders() {
-  cron.schedule('0 * * * *', async () => {
-    const now = new Date();
-    const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const in25h = new Date(now.getTime() + 25 * 60 * 60 * 1000);
-    try {
-      const rides = await prisma.ride.findMany({
-        where: {
-          status: 'confirmed',
-          pickup_time: { gte: in24h, lt: in25h },
-        },
-        include: {
-          patient: { select: { phone: true } },
-          driver: { select: { phone: true } },
-        },
-      });
-      for (const ride of rides) {
-        const timeStr = new Date(ride.pickup_time).toLocaleString();
-        await sendSMS(
-          ride.patient.phone,
-          `Reminder: your ride is scheduled for ${timeStr}.`,
-        );
-        await sendSMS(
-          ride.driver.phone,
-          `Reminder: you have a ride scheduled for ${timeStr}.`,
-        );
-      }
-    } catch (err) {
-      log.error({ err }, 'Failed to send ride reminders');
+const reminderConnection = config.REDIS_URL
+  ? new IORedis(config.REDIS_URL)
+  : null;
+let reminderQueue;
+let reminderScheduler;
+let reminderLock;
+
+function getReminderQueue() {
+  if (!reminderQueue && reminderConnection) {
+    reminderQueue = new Queue('ride-reminders', {
+      connection: reminderConnection,
+    });
+    reminderScheduler = new QueueScheduler('ride-reminders', {
+      connection: reminderConnection,
+    });
+    reminderLock = new Redlock([reminderConnection]);
+  }
+  return reminderQueue;
+}
+
+async function scheduleReminders() {
+  const q = getReminderQueue();
+  if (!q) {
+    log.warn('Redis not configured; reminders disabled');
+    return;
+  }
+  try {
+    const lock = await reminderLock.acquire(['locks:reminder-schedule'], 60000);
+    await q.add(
+      'send-reminders',
+      {},
+      {
+        jobId: 'send-reminders',
+        repeat: { cron: '0 * * * *' },
+        attempts: 5,
+        backoff: { type: 'exponential', delay: 5000 },
+      },
+    );
+    await lock.release();
+  } catch (err) {
+    if (err.name !== 'LockError') {
+      log.error({ err }, 'Failed to schedule reminders');
     }
-  });
+  }
 }
 
 // Generic error handler with PATIENT_DATA_KEY redaction
