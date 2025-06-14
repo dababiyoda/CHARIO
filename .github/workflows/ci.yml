@@ -31,12 +31,20 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - name: Security audit
+        run: npm audit --production --json | node .github/scripts/npm-audit-gate.js
       - name: Create chario database
         run: psql postgresql://chario:chario@localhost:5432/postgres -c "CREATE DATABASE chario;"
       - run: npx markdown-lint docs/**/*.md
       - run: npx prisma migrate deploy
-      - run: npm run test:coverage
+      - name: Run tests with coverage
+        run: npm run test:coverage -- --coverageThreshold='{"global":{"branches":80,"functions":85,"lines":85,"statements":85}}'
       - run: bash .github/scripts/coverage-gate.sh
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
       - uses: github/codeql-action/analyze@v3
       - name: TruffleHog scan
         if: github.event_name == 'push'
