@@ -46,7 +46,11 @@
     "socket.io": "^4.7.2",
     "stripe": "^12.0.0",
     "twilio": "^4.16.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@opentelemetry/sdk-node": "^0.57.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.57.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
+    "@prisma/instrumentation": "^6.9.0"
   },
   "overrides": {
     "debug": "^4.4.1"

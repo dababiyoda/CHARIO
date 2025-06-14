@@ -1,5 +1,6 @@
 const pino = require('pino');
 const path = require('path');
+const { trace } = require('@opentelemetry/api');
 
 const transport =
   process.env.NODE_ENV === 'production'
@@ -12,6 +13,13 @@ const root = pino(
     redact: {
       paths: ['PATIENT_DATA_KEY'],
       censor: '[REDACTED]',
+    },
+    mixin() {
+      const span = trace.getActiveSpan();
+      if (span) {
+        return { traceId: span.spanContext().traceId };
+      }
+      return {};
     },
   },
   transport,
