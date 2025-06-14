@@ -1,16 +1,55 @@
+const { spawnSync } = require('child_process');
 const { config: dotenvSafe } = require('dotenv-safe');
 const { z } = require('zod');
 const path = require('path');
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+let cache = { timestamp: 0, env: {} };
+
+function loadSecrets() {
+  if (Date.now() - cache.timestamp < CACHE_TTL) {
+    Object.assign(process.env, cache.env);
+    return;
+  }
+
+  const names = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'STRIPE_KEY',
+    'TWILIO_SID',
+    'TWILIO_TOKEN',
+    'S3_BUCKET',
+    'S3_ENDPOINT',
+    'S3_ACCESS_KEY',
+    'S3_SECRET_KEY',
+    'PATIENT_DATA_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'TWILIO_FROM_PHONE',
+    'METRICS_USER',
+    'METRICS_PASS',
+    'COMMIT_SHA',
+    'REDIS_URL',
+  ];
+
+  const script = path.resolve(__dirname, '../../ops/secrets/fetch-secrets.js');
+  const result = spawnSync('node', [script, ...names], { encoding: 'utf8' });
+  if (result.status === 0 && result.stdout) {
+    try {
+      const output = JSON.parse(result.stdout);
+      cache = { timestamp: Date.now(), env: output };
+      Object.assign(process.env, output);
+    } catch (err) {
+      console.error('Failed to parse secrets output', err);
+    }
+  } else if (result.error) {
+    console.error('Failed to load secrets', result.error);
+  }
+}
+
 // Load environment variables. During tests, rely solely on process.env
-if (process.env.NODE_ENV === 'test') {
-  dotenvSafe({
-    allowEmptyValues: true,
-    path: path.resolve(__dirname, '../../.env.test'), // skip loading .env
-    example: path.resolve(__dirname, '../../.env.example'),
-  });
-} else {
+if (process.env.NODE_ENV !== 'test') {
   dotenvSafe({ allowEmptyValues: true });
+  loadSecrets();
 }
 
 const env = {
