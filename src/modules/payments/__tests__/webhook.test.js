@@ -3,7 +3,7 @@ jest.mock('@prisma/client');
 const request = require('supertest');
 const stripe = require('stripe')('sk_test');
 process.env.DATABASE_URL = 'postgres://test';
-process.env.JWT_SECRET = 'secret';
+process.env.JWT_SECRET = 'a'.repeat(32);
 process.env.STRIPE_KEY = 'sk';
 process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
