@@ -15,6 +15,7 @@ const express = require('express');
 const createAuthRouter = require('../routes');
 const { __users, __sessions } = require('@prisma/client');
 const { _otpStore } = require('../service');
+const crypto = require('crypto');
 
 describe('auth flow', () => {
   let app;
@@ -23,7 +24,7 @@ describe('auth flow', () => {
     __users.length = 0;
     __sessions.length = 0;
     _otpStore.clear();
-    jest.spyOn(global.Math, 'random').mockReturnValue(0.5);
+    jest.spyOn(crypto, 'randomInt').mockReturnValue(450000);
     app = express();
     app.use(express.json());
     app.use('/auth', createAuthRouter());
@@ -34,14 +35,12 @@ describe('auth flow', () => {
   });
 
   test('register and login with password', async () => {
-    const res = await request(app)
-      .post('/auth/register')
-      .send({
-        email: 'a@b.com',
-        phone: '1',
-        password: 'pass',
-        role: 'patient',
-      });
+    const res = await request(app).post('/auth/register').send({
+      email: 'a@b.com',
+      phone: '1',
+      password: 'pass',
+      role: 'patient',
+    });
     expect(res.status).toBe(201);
     expect(__users).toHaveLength(1);
     const login = await request(app)
@@ -53,14 +52,12 @@ describe('auth flow', () => {
   });
 
   test('otp fallback and refresh rotation', async () => {
-    await request(app)
-      .post('/auth/register')
-      .send({
-        email: 'b@b.com',
-        phone: '2',
-        password: 'pass',
-        role: 'patient',
-      });
+    await request(app).post('/auth/register').send({
+      email: 'b@b.com',
+      phone: '2',
+      password: 'pass',
+      role: 'patient',
+    });
     const fail = await request(app)
       .post('/auth/login')
       .send({ email: 'b@b.com', password: 'bad' });
