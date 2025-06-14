@@ -3,11 +3,32 @@ const { prisma } = require('../../utils/db');
 const { config } = require('../../config/env');
 const stripe = require('stripe')(config.STRIPE_KEY || '');
 const { getLogger } = require('../../utils/logger');
+const { chargeCard } = require('./service');
+const {
+  validate,
+  paymentCreateSchema,
+} = require('../../utils/middleware/validate');
 
 const log = getLogger(__filename);
 
 function createWebhookRouter(io) {
   const router = express.Router();
+
+  router.post(
+    '/payments',
+    express.json(),
+    validate(paymentCreateSchema),
+    async (req, res) => {
+      try {
+        const { rideId, amount, customerId } = req.validated.body;
+        const intent = await chargeCard({ rideId, amount, customerId });
+        res.status(201).json(intent);
+      } catch (err) {
+        log.error({ err }, 'failed to create payment');
+        res.status(400).json({ error: 'payment failed' });
+      }
+    },
+  );
 
   router.post(
     '/webhook/stripe',
