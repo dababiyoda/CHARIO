@@ -28,13 +28,25 @@ const bookRideSchema = z.object({
 });
 
 const loginSchema = z.object({
-  body: z.object({
-    email: z.string().email(),
-    password: z.string().min(8),
-  }),
+  body: z
+    .object({
+      email: z.string().email(),
+      password: z.string().min(8).optional(),
+      otp: z.string().length(6).optional(),
+    })
+    .refine((v) => v.password || v.otp, {
+      message: 'password or otp required',
+    }),
 });
 
-const signupSchema = loginSchema; // same fields for this demo
+const signupSchema = z.object({
+  body: z.object({
+    email: z.string().email(),
+    phone: z.string().min(1),
+    password: z.string().min(8),
+    role: z.enum(['patient', 'driver']),
+  }),
+});
 
 const ridesQuerySchema = z.object({
   query: z.object({
@@ -48,6 +60,26 @@ const idSchema = z.object({
   params: z.object({ id: z.string().uuid() }),
 });
 
+const paymentCreateSchema = z.object({
+  body: z.object({
+    rideId: z.string().uuid(),
+    amount: z.number().positive(),
+    customerId: z.string().min(1),
+  }),
+});
+
+const rideCancelSchema = z.object({
+  params: z.object({ id: z.string().uuid() }),
+});
+
+const insuranceClaimSchema = z.object({
+  body: z.object({
+    rideId: z.string().uuid(),
+    fileName: z.string().min(1),
+    file: z.string().min(1),
+  }),
+});
+
 module.exports = {
   validate,
   bookRideSchema,
@@ -55,4 +87,7 @@ module.exports = {
   signupSchema,
   ridesQuerySchema,
   idSchema,
+  paymentCreateSchema,
+  rideCancelSchema,
+  insuranceClaimSchema,
 };

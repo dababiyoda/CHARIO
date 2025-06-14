@@ -38,14 +38,14 @@ describe('auth flow', () => {
     const res = await request(app).post('/auth/register').send({
       email: 'a@b.com',
       phone: '1',
-      password: 'pass',
+      password: 'password1',
       role: 'patient',
     });
     expect(res.status).toBe(201);
     expect(__users).toHaveLength(1);
     const login = await request(app)
       .post('/auth/login')
-      .send({ email: 'a@b.com', password: 'pass' });
+      .send({ email: 'a@b.com', password: 'password1' });
     expect(login.status).toBe(200);
     expect(login.body).toHaveProperty('accessToken');
     expect(login.body).toHaveProperty('refreshToken');
@@ -55,12 +55,12 @@ describe('auth flow', () => {
     await request(app).post('/auth/register').send({
       email: 'b@b.com',
       phone: '2',
-      password: 'pass',
+      password: 'password1',
       role: 'patient',
     });
     const fail = await request(app)
       .post('/auth/login')
-      .send({ email: 'b@b.com', password: 'bad' });
+      .send({ email: 'b@b.com', password: 'wrongpass' });
     expect(fail.status).toBe(401);
     const code = '550000';
     const login = await request(app)
