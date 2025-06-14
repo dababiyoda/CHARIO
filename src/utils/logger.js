@@ -1,4 +1,6 @@
 const pino = require('pino');
+const pinoHttp = require('pino-http');
+const { randomUUID } = require('crypto');
 const path = require('path');
 
 const transport =
@@ -13,6 +15,25 @@ const root = pino(
       paths: ['PATIENT_DATA_KEY'],
       censor: '[REDACTED]',
     },
+    serializers: {
+      req(req) {
+        const serialized = pino.stdSerializers.req(req);
+        if (serialized && serialized.body) {
+          const body = { ...serialized.body };
+          ['phone', 'address', 'token'].forEach((k) => delete body[k]);
+          serialized.body = body;
+        }
+        return serialized;
+      },
+      res(res) {
+        const serialized = pino.stdSerializers.res(res);
+        if (serialized && serialized.headers) {
+          const { 'set-cookie': _skip, ...headers } = serialized.headers;
+          serialized.headers = headers;
+        }
+        return serialized;
+      },
+    },
   },
   transport,
 );
@@ -24,4 +45,16 @@ function getLogger(filename) {
   return root.child({ module: modulePath });
 }
 
-module.exports = { logger: root, getLogger };
+function createHttpLogger() {
+  return pinoHttp({
+    logger: root,
+    genReqId: (req) => req.headers['x-correlation-id'] || randomUUID(),
+    customLogLevel: (res, err) => {
+      if (err || res.statusCode >= 500) return 'error';
+      if (res.statusCode >= 400) return 'warn';
+      return 'info';
+    },
+  });
+}
+
+module.exports = { logger: root, getLogger, createHttpLogger };

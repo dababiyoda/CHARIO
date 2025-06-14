@@ -20,6 +20,9 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.828.0",
     "@prisma/client": "^6.9.0",

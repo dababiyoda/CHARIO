@@ -2,8 +2,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const { prisma } = require('./utils/db');
-const pinoHttp = require('pino-http');
-const { getLogger } = require('./utils/logger');
+const { getLogger, createHttpLogger } = require('./utils/logger');
 const { randomUUID, createHash } = require('crypto');
 const { observeRequest } = require('./utils/metrics');
 const client = require('prom-client');
@@ -34,9 +33,7 @@ const {
 
 const app = express();
 client.collectDefaultMetrics();
-const httpLogger = pinoHttp({
-  genReqId: (req) => req.headers['x-correlation-id'] || randomUUID(),
-});
+const httpLogger = createHttpLogger();
 const log = getLogger(__filename);
 function requireTLS(req, res, next) {
   if (config.NODE_ENV === 'test') {
