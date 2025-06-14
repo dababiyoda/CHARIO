@@ -9,11 +9,19 @@ async function run() {
   try {
     const key = config.PATIENT_DATA_KEY;
     await pool.query(
-      'UPDATE patients SET name = pgp_sym_encrypt(name, $1)::text, phone = pgp_sym_encrypt(phone, $1)::text',
+      "UPDATE patients SET name = pgp_sym_encrypt(name, $1)::text WHERE name NOT LIKE '\\x%'",
       [key],
     );
     await pool.query(
-      'UPDATE rides SET pickup_address = pgp_sym_encrypt(pickup_address, $1)::text, dropoff_address = pgp_sym_encrypt(dropoff_address, $1)::text',
+      "UPDATE patients SET phone = pgp_sym_encrypt(phone, $1)::text WHERE phone NOT LIKE '\\x%'",
+      [key],
+    );
+    await pool.query(
+      "UPDATE rides SET pickup_address = pgp_sym_encrypt(pickup_address, $1)::text WHERE pickup_address NOT LIKE '\\x%'",
+      [key],
+    );
+    await pool.query(
+      "UPDATE rides SET dropoff_address = pgp_sym_encrypt(dropoff_address, $1)::text WHERE dropoff_address NOT LIKE '\\x%'",
       [key],
     );
     log.info('PII encryption backfill complete');

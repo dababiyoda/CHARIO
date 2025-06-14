@@ -6,7 +6,16 @@ const transport =
     ? undefined
     : pino.transport({ target: 'pino-pretty' });
 
-const root = pino({ level: 'info' }, transport);
+const root = pino(
+  {
+    level: 'info',
+    redact: {
+      paths: ['PATIENT_DATA_KEY'],
+      censor: '[REDACTED]',
+    },
+  },
+  transport,
+);
 
 function getLogger(filename) {
   const modulePath = path
