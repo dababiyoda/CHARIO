@@ -88,3 +88,8 @@ model Session {
   expiresAt DateTime @db.Timestamptz
   revokedAt DateTime? @db.Timestamptz
 }
+
+model WebhookEvent {
+  id        String   @id
+  createdAt DateTime @default(now()) @db.Timestamptz
+}
