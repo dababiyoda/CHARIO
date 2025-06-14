@@ -21,6 +21,7 @@ graph TD
 ```bash
 git clone https://github.com/yourname/CHARIO && cd CHARIO
 cp .env.example .env              # fill secrets
+# PATIENT_DATA_KEY is required for pgcrypto encryption
 npm ci && npx prisma migrate dev  # creates DB
 npm run dev                       # http://localhost:3000
 ```

@@ -12,6 +12,7 @@
     "test:ci": "jest --coverage --coverageReporters=text --coverageReporters=lcov --coverageReporters=json-summary && npx --yes make-coverage-badge --report-path coverage/coverage-summary.json --output-path coverage.svg",
     "migrate": "knex migrate:latest",
     "seed": "node seed.js",
+    "backfill:encryption": "node scripts/backfill-encryption.js",
     "cron:reconcile": "node scripts/reconcile.js",
     "worker:payouts": "node src/workers/payout.worker.js"
   },
