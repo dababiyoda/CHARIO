@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-THRESHOLD=80
+THRESHOLD=85
 LINES=$(node - <<'JS'
 const fs=require('fs');
 const data=JSON.parse(fs.readFileSync('coverage/coverage-summary.json'));
