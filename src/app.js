@@ -373,4 +373,29 @@ function scheduleReminders() {
   });
 }
 
+// Generic error handler with PATIENT_DATA_KEY redaction
+app.use((err, req, res, next) => {
+  let message = err && err.message ? err.message : 'internal error';
+  if (message.includes(config.PATIENT_DATA_KEY)) {
+    message = message.replace(
+      new RegExp(config.PATIENT_DATA_KEY, 'g'),
+      '[REDACTED]',
+    );
+  }
+  const safeErr = { ...err };
+  for (const k in safeErr) {
+    if (
+      typeof safeErr[k] === 'string' &&
+      safeErr[k].includes(config.PATIENT_DATA_KEY)
+    ) {
+      safeErr[k] = safeErr[k].replace(
+        new RegExp(config.PATIENT_DATA_KEY, 'g'),
+        '[REDACTED]',
+      );
+    }
+  }
+  log.error({ err: safeErr }, message);
+  res.status(500).json({ error: 'internal server error' });
+});
+
 module.exports = { app, server, prisma, io, scheduleReminders };
