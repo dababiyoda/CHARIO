@@ -24,6 +24,7 @@ const env = {
   S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
   S3_SECRET_KEY: process.env.S3_SECRET_KEY,
   PORT: process.env.PORT,
+  PATIENT_DATA_KEY: process.env.PATIENT_DATA_KEY,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
   TWILIO_FROM_PHONE: process.env.TWILIO_FROM_PHONE,
   NODE_ENV: process.env.NODE_ENV,
@@ -40,6 +41,7 @@ const schema = z.object({
   TWILIO_SID: z.string().nonempty(),
   TWILIO_TOKEN: z.string().nonempty(),
   S3_BUCKET: z.string().nonempty(),
+  PATIENT_DATA_KEY: z.string().nonempty(),
 });
 
 const result = schema.safeParse(env);

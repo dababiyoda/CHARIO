@@ -15,8 +15,8 @@ enum ride_status {
 
 model Patient {
   id         String   @id @default(uuid()) @db.Uuid
-  name       String
-  phone      String
+  name       String   @db.VarChar
+  phone      String   @db.VarChar
   rides      Ride[]   @relation("patientRides")
   created_at DateTime @default(now()) @db.Timestamptz
 }
@@ -42,8 +42,8 @@ model Ride {
   driver         Driver?     @relation("driverRides", fields: [driver_id], references: [id])
   driver_id      String?     @db.Uuid
   pickup_time    DateTime    @db.Timestamptz
-  pickup_address String
-  dropoff_address String
+  pickup_address String   @db.VarChar
+  dropoff_address String   @db.VarChar
   payment_type   String
   status         ride_status @default(pending) @db.Enum("ride_status")
   insurance_id   String?     @db.Uuid

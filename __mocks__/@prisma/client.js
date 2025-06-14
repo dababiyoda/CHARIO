@@ -111,6 +111,7 @@ class PrismaClient {
       },
     };
     this.$queryRaw = async () => [{ '?column?': 1 }];
+    this.$use = () => {};
   }
 }
 

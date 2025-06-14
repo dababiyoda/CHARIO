@@ -7,6 +7,7 @@ process.env.STRIPE_KEY = 'sk';
 process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
+process.env.PATIENT_DATA_KEY = 'testkey';
 const { app, prisma } = require('../../app');
 const { __rides } = require('@prisma/client');
 
@@ -55,13 +56,11 @@ describe('/rides booking endpoint', () => {
 
   test('missing fields return 422', async () => {
     const future = new Date(Date.now() + 8 * 24 * 60 * 60 * 1000).toISOString();
-    const res = await request(app)
-      .post('/rides')
-      .send({
-        pickup_time: future,
-        dropoff_address: 'B',
-        payment_type: 'card',
-      });
+    const res = await request(app).post('/rides').send({
+      pickup_time: future,
+      dropoff_address: 'B',
+      payment_type: 'card',
+    });
     expect(res.status).toBe(422);
   });
 

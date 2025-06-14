@@ -10,6 +10,7 @@ process.env.STRIPE_KEY = 'sk';
 process.env.TWILIO_SID = 'sid';
 process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
+process.env.PATIENT_DATA_KEY = 'testkey';
 
 const { PrismaClient, __rides } = require('@prisma/client');
 const { chargeCard } = require('../service');

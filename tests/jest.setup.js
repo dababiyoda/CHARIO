@@ -9,4 +9,5 @@ process.env = {
   TWILIO_SID: 'ACxxx',
   TWILIO_TOKEN: 'xxx',
   S3_BUCKET: 'dummy',
+  PATIENT_DATA_KEY: 'testkey',
 };
