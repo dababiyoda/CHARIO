@@ -23,6 +23,7 @@
   "dependencies": {
     "@prisma/client": "^6.9.0",
     "aws-sdk": "^2.1692.0",
+    "@aws-sdk/client-ssm": "^3.828.0",
     "basic-auth": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "bullmq": "^4.10.3",

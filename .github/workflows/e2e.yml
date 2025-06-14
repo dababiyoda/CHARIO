@@ -24,7 +24,7 @@ jobs:
         run: docker build -t chario .
       - name: Run container
         run: |
-          docker run -d -p 3000:3000 --env-file .github/env.test --name chario_app chario
+          docker run -d -p 3000:3000 --name chario_app chario
       - name: Wait for health
         run: |
           for i in {1..30}; do
