@@ -1,2 +1,6 @@
 #!/usr/bin/env node
+if (process.env.NODE_ENV !== 'test') {
+  const { initTracing } = require('../src/utils/metrics');
+  initTracing();
+}
 require('../src/server');

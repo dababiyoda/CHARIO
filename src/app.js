@@ -3,7 +3,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const { prisma } = require('./utils/db');
 const pinoHttp = require('pino-http');
-const { getLogger } = require('./utils/logger');
+const { logger: rootLogger, getLogger } = require('./utils/logger');
 const { randomUUID, createHash } = require('crypto');
 const { observeRequest } = require('./utils/metrics');
 const client = require('prom-client');
@@ -35,6 +35,7 @@ const {
 const app = express();
 client.collectDefaultMetrics();
 const httpLogger = pinoHttp({
+  logger: rootLogger,
   genReqId: (req) => req.headers['x-correlation-id'] || randomUUID(),
 });
 const log = getLogger(__filename);
