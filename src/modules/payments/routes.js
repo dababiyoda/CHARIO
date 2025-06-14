@@ -15,11 +15,33 @@ function createWebhookRouter(io) {
     async (req, res) => {
       const sig = req.header('stripe-signature');
       try {
+        const rawBody = req.body;
         const event = stripe.webhooks.constructEvent(
-          req.body,
+          rawBody,
           sig,
           config.STRIPE_WEBHOOK_SECRET,
         );
+
+        if (
+          (event.livemode && config.NODE_ENV !== 'production') ||
+          (!event.livemode && config.NODE_ENV === 'production')
+        ) {
+          return res.status(400).send('livemode mismatch');
+        }
+
+        const exists = await prisma.webhookEvent.findUnique({
+          where: { id: event.id },
+        });
+
+        await prisma.webhookEvent.upsert({
+          where: { id: event.id },
+          create: { id: event.id },
+          update: {},
+        });
+
+        if (exists) {
+          return res.json({ received: true });
+        }
 
         if (event.type === 'payment_intent.succeeded') {
           const intent = event.data.object;

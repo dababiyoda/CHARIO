@@ -11,7 +11,7 @@ process.env.TWILIO_TOKEN = 'token';
 process.env.S3_BUCKET = 'bucket';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 const createWebhookRouter = require('../routes');
-const { __rides } = require('@prisma/client');
+const { __rides, __webhookEvents } = require('@prisma/client');
 
 describe('stripe webhook router', () => {
   let app;
@@ -56,5 +56,56 @@ describe('stripe webhook router', () => {
       .set('Content-Type', 'application/json')
       .send(payload);
     expect(res.status).toBe(400);
+  });
+
+  test('mismatched livemode returns 400', async () => {
+    const payload = JSON.stringify({
+      id: 'evt_live',
+      livemode: true,
+      type: 'payment_intent.succeeded',
+      data: { object: { id: 'pi_123' } },
+    });
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: 'whsec_test',
+    });
+    const res = await request(app)
+      .post('/webhook/stripe')
+      .set('Stripe-Signature', header)
+      .set('Content-Type', 'application/json')
+      .send(payload);
+    expect(res.status).toBe(400);
+  });
+
+  test('duplicate events are ignored', async () => {
+    __webhookEvents.length = 0;
+    const payload = JSON.stringify({
+      id: 'evt_1',
+      livemode: false,
+      type: 'payment_intent.succeeded',
+      data: { object: { id: 'pi_123' } },
+    });
+    const header = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: 'whsec_test',
+    });
+
+    const res1 = await request(app)
+      .post('/webhook/stripe')
+      .set('Stripe-Signature', header)
+      .set('Content-Type', 'application/json')
+      .send(payload);
+    const statusAfterFirst = __rides[0].status;
+
+    const res2 = await request(app)
+      .post('/webhook/stripe')
+      .set('Stripe-Signature', header)
+      .set('Content-Type', 'application/json')
+      .send(payload);
+
+    expect(res1.status).toBe(200);
+    expect(res2.status).toBe(200);
+    expect(__webhookEvents.length).toBe(1);
+    expect(__rides[0].status).toBe(statusAfterFirst);
   });
 });

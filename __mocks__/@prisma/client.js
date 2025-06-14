@@ -3,6 +3,7 @@ const insuranceDocs = [];
 const auditLogs = [];
 const users = [];
 const sessions = [];
+const webhookEvents = [];
 
 class PrismaClient {
   constructor() {
@@ -110,6 +111,20 @@ class PrismaClient {
         return session;
       },
     };
+
+    this.webhookEvent = {
+      findUnique: async ({ where }) => {
+        return webhookEvents.find((e) => e.id === where.id) || null;
+      },
+      upsert: async ({ where, create }) => {
+        let event = webhookEvents.find((e) => e.id === where.id);
+        if (!event) {
+          event = { id: where.id, ...create };
+          webhookEvents.push(event);
+        }
+        return event;
+      },
+    };
     this.$queryRaw = async () => [{ '?column?': 1 }];
     this.$use = () => {};
   }
@@ -121,4 +136,5 @@ module.exports = {
   __insuranceDocs: insuranceDocs,
   __users: users,
   __sessions: sessions,
+  __webhookEvents: webhookEvents,
 };
