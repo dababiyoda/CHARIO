@@ -10,7 +10,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache curl
 COPY --from=builder /app/node_modules ./node_modules
-COPY . .
+COPY --chown=node:node . .
+USER node
 EXPOSE 3000 9100
 CMD ["sh", "-c", "npm run migrate && npm run seed && node index.js"]
 
