@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { randomUUID, createHash } = require('crypto');
+const crypto = require('crypto');
+const { randomUUID, createHash } = crypto;
 const { prisma } = require('../../utils/db');
 const { config } = require('../../config/env');
 const { sendSMS } = require('../rides/service');
@@ -92,7 +93,7 @@ async function registerUser({ email, phone, password, role }) {
 }
 
 async function sendOTP(user) {
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = (100000 + crypto.randomInt(900000)).toString();
   const codeHash = await hashPassword(code);
   otpStore.set(user.email, { codeHash, expires: Date.now() + 10 * 60 * 1000 });
   if (user.phone) {
