@@ -37,6 +37,11 @@ client.collectDefaultMetrics();
 const httpLogger = pinoHttp({
   logger: rootLogger,
   genReqId: (req) => req.headers['x-correlation-id'] || randomUUID(),
+  customLogLevel: (res, err) => {
+    if (err || res.statusCode >= 500) return 'error';
+    if (res.statusCode >= 400) return 'warn';
+    return 'info';
+  },
 });
 const log = getLogger(__filename);
 function requireTLS(req, res, next) {
