@@ -71,6 +71,10 @@ jobs:
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: true
+      - name: Publish Storybook to Chromatic
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
       - uses: github/codeql-action/analyze@v3
       - name: TruffleHog scan
         if: github.event_name == 'push'
