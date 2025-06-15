@@ -19,6 +19,11 @@ jobs:
           --health-cmd="pg_isready -U testuser" --health-interval=10s --health-timeout=5s --health-retries=5
     env:
       DATABASE_URL: 'postgresql://testuser:testpass@localhost:5432/testdb'
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: testuser
+      PGPASSWORD: testpass
+      PGDATABASE: testdb
     steps:
       - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v3
@@ -39,6 +44,13 @@ jobs:
           fi
       - name: Prisma binary targets
         run: echo "PRISMA_CLI_BINARY_TARGETS=native" >> $GITHUB_ENV
+      - name: Wait for Postgres to be ready
+        run: |
+          for i in {1..15}; do
+            pg_isready -h localhost -p 5432 -U testuser && break
+            echo "Postgres not ready yet... ($i/15)"
+            sleep 2
+          done
       - run: npm ci
       - run: npx prisma generate
       - name: Security audit
