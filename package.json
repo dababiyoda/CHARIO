@@ -14,7 +14,9 @@
     "seed": "node seed.js",
     "backfill:encryption": "node scripts/backfill-encryption.js",
     "cron:reconcile": "node scripts/reconcile.js",
-    "worker:payouts": "node src/workers/payout.worker.js"
+    "worker:payouts": "node src/workers/payout.worker.js",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "keywords": [],
   "author": "",
@@ -95,7 +97,14 @@
     "react-spring-bottom-sheet": "^3.4.1",
     "react-toastify": "^11.0.5",
     "supertest": "^6.3.3",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.10",
+    "storybook": "^9.0.9",
+    "@storybook/react-vite": "^9.0.9",
+    "@chromatic-com/storybook": "^4",
+    "@storybook/addon-docs": "^9.0.9",
+    "@storybook/addon-onboarding": "^9.0.9",
+    "prop-types": "^15.8.1",
+    "eslint-plugin-storybook": "^9.0.9"
   },
   "jest": {
     "setupFiles": [
