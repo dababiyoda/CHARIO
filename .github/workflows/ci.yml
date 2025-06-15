@@ -58,6 +58,10 @@ jobs:
             sleep 2
           done
       - run: npm ci
+      - name: Run Lint
+        run: npm run lint
+      - name: Run Tests
+        run: npm test
       - run: npx prisma generate
       - name: Security audit
         run: npm audit --production --json | node .github/scripts/npm-audit-gate.js
