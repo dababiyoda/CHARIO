@@ -46,9 +46,15 @@ jobs:
         run: echo "PRISMA_CLI_BINARY_TARGETS=native" >> $GITHUB_ENV
       - name: Wait for Postgres to be ready
         run: |
-          for i in {1..15}; do
+          for i in {1..30}; do
             pg_isready -h localhost -p 5432 -U testuser && break
-            echo "Postgres not ready yet... ($i/15)"
+            echo "Waiting for Postgres..."
+            sleep 2
+          done
+      - name: Wait for Postgres with psql
+        run: |
+          until PGPASSWORD=testpass psql -h localhost -U testuser -c '\q'; do
+            echo "Waiting for Postgres to accept connections..."
             sleep 2
           done
       - run: npm ci
