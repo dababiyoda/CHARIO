@@ -4,6 +4,7 @@ const { Server } = require('socket.io');
 const { prisma } = require('./utils/db');
 const pinoHttp = require('pino-http');
 const { logger: rootLogger, getLogger } = require('./utils/logger');
+const fs = require('fs');
 const { randomUUID, createHash } = require('crypto');
 const { observeRequest } = require('./utils/metrics');
 const client = require('prom-client');
@@ -66,7 +67,14 @@ app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 app.use('/static', express.static('public', { maxAge: '30d', etag: true }));
 
 // Simple health endpoint for containers
+const READY_FILE = '/tmp/migrations-complete';
 app.get('/healthz', (req, res) => res.send('ok'));
+app.get('/readyz', (req, res) => {
+  if (fs.existsSync(READY_FILE)) {
+    return res.send('ok');
+  }
+  return res.status(503).send('migrations pending');
+});
 app.get('/health', async (req, res) => {
   await prisma.$queryRaw`SELECT 1`;
   await stripe.balance.retrieve().catch(() => null);
