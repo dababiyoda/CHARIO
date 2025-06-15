@@ -4,6 +4,17 @@
 
 Simplified ride scheduling for non-emergency medical transport.
 
+## Quick Start
+
+```bash
+git clone https://github.com/yourname/CHARIO && cd CHARIO
+cp .env.example .env              # fill secrets
+docker-compose up -d              # start postgres, redis and minio
+npm ci
+npm run migrate && npm run seed   # setup database
+npm run dev                       # http://localhost:3000
+```
+
 ## Architecture
 
 ```mermaid
@@ -44,7 +55,37 @@ local Postgres instance:
    DATABASE_URL=postgresql://localhost:5433/chario_local npm run dev
    ```
 
+## Replit Deploy
+
+1. [Fork this repo](https://github.com/yourname/CHARIO) and import it into [Replit](https://replit.com).
+2. Add environment variables found in `.env.example` using Replit Secrets or run:
+   ```bash
+   ./scripts/sync-secrets.sh replit
+   ```
+3. Start the service:
+   ```bash
+   npm run migrate && npm run seed && npm run dev
+   ```
+
+## Fly.io Docker
+
+1. Install the [Fly CLI](https://fly.io/docs/flyctl/install/) and sign in.
+2. Provision the app defined in `fly.toml`:
+   ```bash
+   fly launch --copy-config --no-deploy
+   ```
+3. Sync secrets:
+   ```bash
+   ./scripts/sync-secrets.sh fly
+   ```
+4. Deploy the Docker image:
+   ```bash
+   fly deploy
+   ```
+
 ## API reference
+
+See the full [OpenAPI specification](ops/api.yaml) generated via `express-openapi`.
 
 | Method | Path                | Auth         | Description                     |
 | ------ | ------------------- | ------------ | ------------------------------- |
