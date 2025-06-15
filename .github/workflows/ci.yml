@@ -44,29 +44,18 @@ jobs:
           fi
       - name: Prisma binary targets
         run: echo "PRISMA_CLI_BINARY_TARGETS=native" >> $GITHUB_ENV
-      - name: Wait for Postgres to be ready
-        run: |
-          for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U testuser && break
-            echo "Waiting for Postgres..."
-            sleep 2
-          done
-      - name: Wait for Postgres with psql
-        run: |
-          until PGPASSWORD=testpass psql -h localhost -U testuser -c '\q'; do
-            echo "Waiting for Postgres to accept connections..."
-            sleep 2
-          done
+      - name: Wait for Postgres
+        run: ./scripts/wait-for-postgres.sh localhost testuser
       - run: npm ci
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
       - name: Run Lint
         run: npm run lint
       - name: Run Tests
         run: npm test
-      - run: npx prisma generate
       - name: Security audit
         run: npm audit --production --json | node .github/scripts/npm-audit-gate.js
       - run: npx markdown-lint docs/**/*.md
-      - run: npx prisma migrate deploy
       - name: Run tests with coverage
         run: npm run test:coverage -- --coverageThreshold='{"global":{"branches":80,"functions":85,"lines":85,"statements":85}}'
       - run: bash .github/scripts/coverage-gate.sh
