@@ -1,5 +1,6 @@
 const colors = require('tailwindcss/colors');
 module.exports = {
+  darkMode: 'class',
   content: ['./public/**/*.html', './frontend/**/*.{js,jsx}'],
   theme: {
     extend: {
@@ -19,7 +20,11 @@ module.exports = {
       },
     },
   },
-  plugins: [require('daisyui')],
+  plugins: [
+    require('daisyui'),
+    require('@tailwindcss/typography'),
+    require('tailwindcss-safe-area'),
+  ],
   daisyui: {
     themes: [
       {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Map, { Marker, Source, Layer } from 'react-map-gl';
+import RideDetailsSheet from './components/RideDetailsSheet.jsx';
 
 const darkStyle = 'mapbox://styles/mapbox/navigation-night-v1';
 
@@ -12,8 +13,9 @@ const routeLayer = {
   },
 };
 
-const DriverMap = ({ driverLocation, patientLocation, mapboxToken }) => {
+const DriverMap = ({ driverLocation, patientLocation, mapboxToken, ride }) => {
   const [route, setRoute] = useState(null);
+  const [showSheet, setShowSheet] = useState(false);
 
   useEffect(() => {
     if (!driverLocation || !patientLocation || !mapboxToken) return;
@@ -52,6 +54,18 @@ const DriverMap = ({ driverLocation, patientLocation, mapboxToken }) => {
           </Source>
         )}
       </Map>
+      <button
+        type="button"
+        onClick={() => setShowSheet(true)}
+        className="absolute bottom-4 right-4 bg-primary text-white rounded-full px-4 py-2"
+      >
+        Details
+      </button>
+      <RideDetailsSheet
+        open={showSheet}
+        onDismiss={() => setShowSheet(false)}
+        ride={ride}
+      />
     </div>
   );
 };

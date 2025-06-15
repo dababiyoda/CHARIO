@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from './components/ui/Button.jsx';
 import Card from './components/ui/Card.jsx';
+import Input from './components/ui/Input.jsx';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -50,12 +51,12 @@ const BookingForm = () => {
           <label className="block text-sm font-medium mb-1" htmlFor="pickup">
             Pickup Address
           </label>
-          <input
+          <Input
             id="pickup"
             type="text"
             value={pickupAddress}
             onChange={(e) => setPickupAddress(e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full"
             required
           />
         </div>
@@ -66,12 +67,12 @@ const BookingForm = () => {
           >
             Destination
           </label>
-          <input
+          <Input
             id="destination"
             type="text"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full"
             required
           />
         </div>
@@ -80,12 +81,12 @@ const BookingForm = () => {
             <label className="block text-sm font-medium mb-1" htmlFor="date">
               Date
             </label>
-            <input
+            <Input
               id="date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full"
               required
             />
           </div>
@@ -93,12 +94,12 @@ const BookingForm = () => {
             <label className="block text-sm font-medium mb-1" htmlFor="time">
               Time
             </label>
-            <input
+            <Input
               id="time"
               type="time"
               value={time}
               onChange={(e) => setTime(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full"
               required
             />
           </div>
