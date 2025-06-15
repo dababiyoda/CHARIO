@@ -7,6 +7,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        ports: ['5432:5432']
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd="pg_isready -U testuser" --health-interval=10s --health-timeout=5s --health-retries=5
     env:
       DATABASE_URL: 'postgresql://testuser:testpass@localhost:5432/testdb'
     steps:
@@ -17,18 +27,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: docker-compose -f docker-compose.test.yml up -d db
-      - name: Wait for DB
+      - name: Set up Docker
         run: |
-          for i in {1..10}; do
-            if docker-compose -f docker-compose.test.yml exec -T db pg_isready -U testuser; then
-              exit 0
-            fi
-            sleep 3
-          done
-          docker-compose -f docker-compose.test.yml logs db
-          exit 1
+          sudo apt-get update
+          sudo apt-get install -y docker.io docker-compose
+      - name: Check Docker Compose
+        run: |
+          if ! command -v docker-compose >/dev/null; then
+            echo 'docker-compose not found' >&2
+            exit 1
+          fi
+      - name: Prisma binary targets
+        run: echo "PRISMA_CLI_BINARY_TARGETS=native" >> $GITHUB_ENV
       - run: npm ci
+      - run: npx prisma generate
       - name: Security audit
         run: npm audit --production --json | node .github/scripts/npm-audit-gate.js
       - run: npx markdown-lint docs/**/*.md
@@ -36,7 +48,6 @@ jobs:
       - name: Run tests with coverage
         run: npm run test:coverage -- --coverageThreshold='{"global":{"branches":80,"functions":85,"lines":85,"statements":85}}'
       - run: bash .github/scripts/coverage-gate.sh
-      - run: docker-compose -f docker-compose.test.yml down
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
