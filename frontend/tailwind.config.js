@@ -1,6 +1,7 @@
 const colors = require('tailwindcss/colors');
 module.exports = {
   content: ['./public/**/*.html', './frontend/**/*.{js,jsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -17,9 +18,13 @@ module.exports = {
         danger: '#FF4646',
         bg: '#F2F2F7',
       },
+      padding: {
+        'safe-b': 'env(safe-area-inset-bottom)',
+        'safe-t': 'env(safe-area-inset-top)',
+      },
     },
   },
-  plugins: [require('daisyui')],
+  plugins: [require('daisyui'), require('@tailwindcss/typography')],
   daisyui: {
     themes: [
       {
