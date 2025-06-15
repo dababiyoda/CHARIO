@@ -12,7 +12,7 @@ module.exports = {
       },
       colors: {
         slate: colors.slate,
-        primary: '#0A84FF',
+        primary: '#007aff',
         success: '#32D74B',
         danger: '#FF4646',
         bg: '#F2F2F7',
@@ -24,7 +24,7 @@ module.exports = {
     themes: [
       {
         mytheme: {
-          primary: '#0A84FF',
+          primary: '#007aff',
           accent: '#32D74B',
         },
       },

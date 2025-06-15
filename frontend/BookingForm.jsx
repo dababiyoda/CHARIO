@@ -16,6 +16,7 @@ const BookingForm = () => {
   const [date, setDate] = useState(getDefaultDate());
   const [time, setTime] = useState('');
   const [paymentType, setPaymentType] = useState('insurance');
+  const [statusMessage, setStatusMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,6 +34,7 @@ const BookingForm = () => {
       });
       if (!res.ok) throw new Error('Request failed');
       toast.success('Ride booked successfully!');
+      setStatusMessage('Ride booked successfully');
       setPickupAddress('');
       setDestination('');
       setDate(getDefaultDate());
@@ -40,6 +42,7 @@ const BookingForm = () => {
       setPaymentType('insurance');
     } catch (err) {
       toast.error('Failed to book ride');
+      setStatusMessage('Failed to book ride');
     }
   };
 
@@ -131,6 +134,9 @@ const BookingForm = () => {
         <Button type="submit" className="w-full">
           Book Ride
         </Button>
+        <div aria-live="polite" role="status" className="sr-only">
+          {statusMessage}
+        </div>
       </form>
     </Card>
   );
