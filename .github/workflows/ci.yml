@@ -8,20 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: 'postgresql://chario:chario@localhost:5432/chario_test'
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: chario
-          POSTGRES_PASSWORD: chario
-          POSTGRES_DB: chario_test
-        ports: ['5432:5432']
-        options: >-
-          --health-cmd="pg_isready -U chario"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+      DATABASE_URL: 'postgresql://testuser:testpass@localhost:5432/testdb'
     steps:
       - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v3
@@ -30,16 +17,26 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - run: docker-compose -f docker-compose.test.yml up -d db
+      - name: Wait for DB
+        run: |
+          for i in {1..10}; do
+            if docker-compose -f docker-compose.test.yml exec -T db pg_isready -U testuser; then
+              exit 0
+            fi
+            sleep 3
+          done
+          docker-compose -f docker-compose.test.yml logs db
+          exit 1
       - run: npm ci
       - name: Security audit
         run: npm audit --production --json | node .github/scripts/npm-audit-gate.js
-      - name: Create chario database
-        run: psql postgresql://chario:chario@localhost:5432/postgres -c "CREATE DATABASE chario;"
       - run: npx markdown-lint docs/**/*.md
       - run: npx prisma migrate deploy
       - name: Run tests with coverage
         run: npm run test:coverage -- --coverageThreshold='{"global":{"branches":80,"functions":85,"lines":85,"statements":85}}'
       - run: bash .github/scripts/coverage-gate.sh
+      - run: docker-compose -f docker-compose.test.yml down
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:

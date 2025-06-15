@@ -101,6 +101,7 @@
     "setupFiles": [
       "<rootDir>/tests/jest.setup.js"
     ],
+    "globalSetup": "<rootDir>/tests/globalSetup.js",
     "moduleNameMapper": {
       "\\.css$": "identity-obj-proxy"
     },
