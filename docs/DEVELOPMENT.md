@@ -64,5 +64,5 @@ protected with basic authentication. The container exposes port `9100` for
 Prometheus scraping.
 
 The repository includes a Grafana dashboard definition at
-`ops/grafana/chario_dashboard.json`. Operations teams should import this file
+`ops/observability/obvio_dashboard.json`. Operations teams should import this file
 using Terraform or the Grafana HTTP API so metrics show up automatically.

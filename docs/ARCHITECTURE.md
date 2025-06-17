@@ -1,6 +1,6 @@
 # System Architecture
 
-This document provides an overview of the CHARIO service including request flows, database layout and example API payloads.
+This document provides an overview of the OBVIO service including request flows, database layout and example API payloads.
 
 ## Sequence diagram
 

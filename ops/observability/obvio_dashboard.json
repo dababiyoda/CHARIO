@@ -54,8 +54,8 @@
   "refresh": "30s",
   "schemaVersion": 36,
   "style": "dark",
-  "tags": ["chario"],
+  "tags": ["obvio"],
   "time": { "from": "now-6h", "to": "now" },
-  "title": "CHARIO Overview",
+  "title": "OBVIO Overview",
   "version": 1
 }

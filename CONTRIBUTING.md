@@ -1,4 +1,4 @@
-# Contributing to CHARIO
+# Contributing to OBVIO
 
 Thank you for helping improve this project! The following guidelines keep the repository consistent.
 
