@@ -1,4 +1,4 @@
--- SQL schema for CHARIO database
+-- SQL schema for OBVIO database
 -- This file creates patients, drivers, rides, and payments tables with UUID primary keys
 -- and appropriate foreign key relationships. It also includes indexes for ride pickup time
 -- and status.

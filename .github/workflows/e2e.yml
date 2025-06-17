@@ -12,19 +12,19 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_USER: chario
-          POSTGRES_PASSWORD: chario
-          POSTGRES_DB: chario_test
+          POSTGRES_USER: obvio
+          POSTGRES_PASSWORD: obvio
+          POSTGRES_DB: obvio_test
         ports: ['5432:5432']
         options: >-
-          --health-cmd="pg_isready -U chario" --health-interval=10s --health-timeout=5s --health-retries=5
+          --health-cmd="pg_isready -U obvio" --health-interval=10s --health-timeout=5s --health-retries=5
     steps:
       - uses: actions/checkout@v4
       - name: Build image
-        run: docker build -t chario .
+        run: docker build -t obvio .
       - name: Run container
         run: |
-          docker run -d -p 3000:3000 --name chario_app chario
+          docker run -d -p 3000:3000 --name obvio_app obvio
       - name: Wait for health
         run: |
           for i in {1..30}; do
@@ -34,7 +34,7 @@ jobs:
             sleep 1
           done
           echo "service failed to start" >&2
-          docker logs chario_app
+          docker logs obvio_app
           exit 1
       - name: Smoke /health & /metrics
         run: |

@@ -1,4 +1,4 @@
-# CHARIO
+# OBVIO
 
 ![Code Style: Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)
 
@@ -7,7 +7,7 @@ Simplified ride scheduling for non-emergency medical transport.
 ## Quick Start
 
 ```bash
-git clone https://github.com/yourname/CHARIO && cd CHARIO
+git clone https://github.com/yourname/OBVIO && cd OBVIO
 cp .env.example .env              # fill secrets
 docker-compose up -d              # start postgres, redis and minio
 npm ci
@@ -30,7 +30,7 @@ graph TD
 ## Getting Started
 
 ```bash
-git clone https://github.com/yourname/CHARIO && cd CHARIO
+git clone https://github.com/yourname/OBVIO && cd OBVIO
 cp .env.example .env              # fill secrets
 # PATIENT_DATA_KEY is required for pgcrypto encryption
 npm ci && npx prisma migrate dev  # creates DB
@@ -52,12 +52,12 @@ local Postgres instance:
    ```
 3. Launch the server pointing `DATABASE_URL` at the new database:
    ```bash
-   DATABASE_URL=postgresql://localhost:5433/chario_local npm run dev
+   DATABASE_URL=postgresql://localhost:5433/obvio_local npm run dev
    ```
 
 ## Replit Deploy
 
-1. [Fork this repo](https://github.com/yourname/CHARIO) and import it into [Replit](https://replit.com).
+1. [Fork this repo](https://github.com/yourname/OBVIO) and import it into [Replit](https://replit.com).
 2. Add environment variables found in `.env.example` using Replit Secrets or run:
    ```bash
    ./scripts/sync-secrets.sh replit
